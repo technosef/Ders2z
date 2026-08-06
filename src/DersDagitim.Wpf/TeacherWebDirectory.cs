@@ -1,0 +1,8 @@
+using DersDagitim.Domain;
+namespace DersDagitim.Wpf;
+public static class TeacherWebDirectory
+{
+    public const string Label = "Tokat Dinamik Okulları Kadromuz"; public const string Url = "https://tokat.dinamikokullari.com/kadromuz"; public static readonly DateOnly AccessDate = new(2026, 8, 2);
+    public static IReadOnlyList<Teacher> Teachers => Data.Split(';').Select(x => x.Split('|')).Select(x => new Teacher(Guid.NewGuid(), x[1], 30, Code: x[0], IsDemo: false, Department: x[2], StaffStatus: "Kadrolu", SourceLabel: Label, SourceUrl: Url, SourceAccessDate: AccessDate)).ToArray();
+    private const string Data = "HK|Haydar KALKAN|Bilişim Teknolojileri;ÖÖ|Ömer ÖZBEK|Bilişim Teknolojileri;OD|Onur DOĞAN|Bilişim Teknolojileri;ŞV|Şirin VERİR|Bilişim Teknolojileri;MG|Merve GÜÇLÜ|Bilişim Teknolojileri;EU|Enes UÇAR|Elektrik-Elektronik Teknolojisi;ÇK|Çağrı KARAKAŞ|Elektrik-Elektronik Teknolojisi;ME|Mehmet ERYILMAZ|Elektrik-Elektronik Teknolojisi;SD|Semih DUMAN|Biyomedikal Cihaz Teknolojileri;SY|Sevgi YILDIRIM|Biyomedikal Cihaz Teknolojileri;ET|Ebru TEMİZ|Matematik;EM|Elif MUDAN|Matematik;ST|Semih TEKİN|Matematik;Eİ|Esra İNCEBAY|Türk Dili ve Edebiyatı;KE|Kubilay EROĞLU|Türk Dili ve Edebiyatı;MS|Mehmet Soner Fiat|Türk Dili ve Edebiyatı;EE|Esin ERNUR|Türk Dili ve Edebiyatı;FP|Ferhat PEKYİĞİT|Fizik;AE|Ali Emre GÖREN|İngilizce;MT|Murat TOMAKİN|İngilizce;DA|Didem ACER|İngilizce;BY|Belkıs YENCİLEK|Kimya;GŞ|Gonca ŞEN|Biyoloji;SD|Serap DEMİR|Biyoloji;MA|Melike AKÇA SOLMAZ|Felsefe;HT|Hamiyet TOĞAN|Beden Eğitimi;TP|Tuğçe POLAT|Coğrafya;MC|Mevlüde CEVİZ|Coğrafya;FG|Fahri GÜN|Tarih;YK|Yasin KORKMAZ|Tarih;GS|Gözde SARIYAR|Müzik;MA|Muhammed Ali YILDIRIM|Din Kültürü ve Ahlak Bilgisi;FB|Fatma BOZYİĞİT|Din Kültürü ve Ahlak Bilgisi";
+}

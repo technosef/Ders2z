@@ -1,0 +1,11 @@
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\bin\Debug\net9.0\DersDagitim.Domain.deps.json
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\bin\Debug\net9.0\DersDagitim.Domain.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\bin\Debug\net9.0\DersDagitim.Domain.pdb
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.AssemblyInfoInputs.cache
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.AssemblyInfo.cs
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.csproj.CoreCompileInputs.cache
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\refint\DersDagitim.Domain.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\DersDagitim.Domain.pdb
+C:\ikizsoft\Ders2z\src\DersDagitim.Domain\obj\Debug\net9.0\ref\DersDagitim.Domain.dll

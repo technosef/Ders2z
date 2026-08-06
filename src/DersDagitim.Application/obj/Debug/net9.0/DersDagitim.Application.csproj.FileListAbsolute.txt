@@ -1,0 +1,15 @@
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\bin\Debug\net9.0\DersDagitim.Application.deps.json
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\bin\Debug\net9.0\DersDagitim.Application.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\bin\Debug\net9.0\DersDagitim.Application.pdb
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\bin\Debug\net9.0\DersDagitim.Domain.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\bin\Debug\net9.0\DersDagitim.Domain.pdb
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.csproj.AssemblyReference.cache
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.AssemblyInfoInputs.cache
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.AssemblyInfo.cs
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.csproj.CoreCompileInputs.cache
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagi.98414640.Up2Date
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\refint\DersDagitim.Application.dll
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\DersDagitim.Application.pdb
+C:\ikizsoft\Ders2z\src\DersDagitim.Application\obj\Debug\net9.0\ref\DersDagitim.Application.dll

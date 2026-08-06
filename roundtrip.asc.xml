@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<timetable importtype="database" displayname="aSc Timetables 2012 XML">
+  <periods>
+    <period name="1.Ders" short="1" period="1" />
+    <period name="2.Ders" short="2" period="2" />
+    <period name="3.Ders" short="3" period="3" />
+    <period name="4.Ders" short="4" period="4" />
+    <period name="5.Ders" short="5" period="5" />
+    <period name="6.Ders" short="6" period="6" />
+    <period name="7.Ders" short="7" period="7" />
+    <period name="8.Ders" short="8" period="8" />
+    <period name="9.Ders" short="9" period="9" />
+    <period name="10.Ders" short="10" period="10" />
+  </periods>
+  <breaks>
+    <break name="ÖĞLE ARASI 1" short="ÖĞLE ARASI 1" break="5" starttime="12:10" endtime="13:00" />
+    <break name="ÖĞLE ARASI 2" short="ÖĞLE ARASI 2" break="6" starttime="13:00" endtime="13:50" />
+  </breaks>
+  <daysdefs>
+    <daysdef id="031665ee65c54888b7e12ff26c1de0c2" name="Pazartesi" short="Pa" days="10000" />
+    <daysdef id="0e1886794e064c128002ea1fe9a23b75" name="Salı" short="Sa" days="01000" />
+    <daysdef id="0cfed960718d4a30ad9120d3a2c9f025" name="Çarşamba" short="Ça" days="00100" />
+    <daysdef id="958c64f33e404b0b93bbed74b951a349" name="Perşembe" short="Pe" days="00010" />
+    <daysdef id="81836bf9ed3c4bf58106eb001daba205" name="Cuma" short="Cu" days="00001" />
+  </daysdefs>
+  <subjects>
+    <subject id="9f1e2849-dd0f-460b-bb6b-5a98eb756f97" name="DEMO · Bilişim Üzümre" short="BÜ" />
+    <subject id="74c5428a-5afe-4662-8a44-4a7d8e74fca1" name="DEMO · Biyomedikal Temelleri" short="BİY" />
+    <subject id="d0083176-9785-40dd-ac20-d56bf214e88c" name="DEMO · Elektrik Tesisatları" short="ELT" />
+    <subject id="8db9d8c8-2007-4f64-85d3-bc8c13a626b4" name="DEMO · Elektronik Uygulamaları" short="E-UYG" />
+    <subject id="2253e021-078b-4129-814a-6aae27d54ea2" name="DEMO · Grafik ve Animasyon" short="GRAFİK" />
+    <subject id="2544cbce-b7f5-4e5c-b15b-fcdde4a81ce9" name="DEMO · Kumanda Sistemleri" short="KUM" />
+    <subject id="20458a6a-a6e9-429c-bd92-1306f6b8cf53" name="DEMO · Mobil Uygulamalar" short="MOB" />
+    <subject id="490ac429-ce5b-4448-8c23-bbc0cc5bd403" name="DEMO · Programlama Temelleri" short="PROG" />
+    <subject id="591a9cec-ca78-406c-956d-01459236e03d" name="DEMO · Seçmeli Dijital Tasarım" short="SDT" />
+    <subject id="796951e8-f0d6-4cea-baa7-c6b1365679c9" name="DEMO · Staj" short="STJ" />
+    <subject id="9e227ccd-16d5-464d-a385-e60b1d695758" name="DEMO · Tıbbi Cihaz Uygulamaları" short="TCU" />
+    <subject id="8badd8c1-6898-4a67-aac0-322083c9e20e" name="DEMO · Web Tasarımı" short="WEB" />
+    <subject id="b46b1c83-5a23-48d9-9364-46349d2ec606" name="DEMO · Ölçme ve Kalibrasyon" short="ÖLK" />
+  </subjects>
+  <teachers>
+    <teacher id="52e972b8-8ab5-4a4e-a1e4-06641365b249" name="DEMO · Ayşe Demir" short="AD" />
+    <teacher id="3bc79fee-fce3-4d32-b09f-0dea8c82d293" name="DEMO · Burak Çetin" short="BÇ" />
+    <teacher id="3bcd2ea8-51f2-4b29-bed3-b38bf5827bb7" name="DEMO · Deniz Yılmaz" short="DY" />
+    <teacher id="88a40fba-04f7-4b49-a0cc-727cdfdc7f5e" name="DEMO · Mehmet Akif Sönmez" short="MAS" />
+    <teacher id="c42fea70-255b-4b57-8c74-41c56c5e48d2" name="DEMO · Selin Kaya" short="SK" />
+  </teachers>
+  <classrooms>
+    <classroom id="d683aa36-4596-44b7-afd8-b57e55ce0283" name="Bilişim Laboratuvarı 3 · DEMO" short="Bilişim Laboratuvarı 3 · DEMO" capacity="24" />
+    <classroom id="82576f5a-6cf7-4d56-a41d-8547de005a11" name="Biyomedikal Cihazlar Laboratuvarı · DEMO" short="Biyomedikal Cihazlar Laboratuvarı · DEMO" capacity="16" />
+    <classroom id="91e6d393-91c9-42cf-9a1d-f3ae29b9e46a" name="Elektrik-Elektronik Atölyesi · DEMO" short="Elektrik-Elektronik Atölyesi · DEMO" capacity="16" />
+  </classrooms>
+  <classes>
+    <class id="ac2519e4-f077-4127-a3e1-340fdfb5202f" name="9/D" short="9/D" />
+    <class id="aa76b1d6-fb76-4044-af3e-b0680bf34dc0" name="10/C" short="10/C" />
+    <class id="96af444f-6aae-47c3-8528-ceb9176c90ab" name="10/D" short="10/D" />
+    <class id="1c33d5fd-e280-40e3-a485-70b27047a183" name="11/BMA" short="11/BMA" />
+    <class id="eed84d0e-f632-4eea-8d16-78cbed6b83af" name="11/D" short="11/D" />
+    <class id="13fd307f-a04e-4f67-ad1a-3fb09d610c01" name="11/E" short="11/E" />
+    <class id="cd3277fd-a6b7-4300-b4b5-e4e534d521fd" name="11/EEA" short="11/EEA" />
+    <class id="e5066a67-4595-4c11-aa48-870908573182" name="11/F" short="11/F" />
+    <class id="9c6718c8-bc1f-4594-b759-c0086b0feaa7" name="11/G" short="11/G" />
+    <class id="1619d14e-f424-40f5-9b53-dc57591dda80" name="12/BMB" short="12/BMB" />
+    <class id="dbef951c-4828-45cb-ade1-93b053f5a753" name="12/C" short="12/C" />
+    <class id="0a043ed9-9098-4a3e-9788-7cc9f2b2aac9" name="12/D" short="12/D" />
+    <class id="8cc1ae79-ab83-47c6-b867-def1d2765f24" name="12/EEB" short="12/EEB" />
+  </classes>
+  <groups />
+  <lessons />
+  <cards />
+  <appmetadata source="Ders Dağıtım Uygulaması" warning="ASC tarafından desteklenmeyen kadro, kilit ve manuel alanlar bu metadata bölümünde sürüme göre genişletilecektir." />
+</timetable>

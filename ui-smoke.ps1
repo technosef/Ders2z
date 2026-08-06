@@ -1,0 +1,18 @@
+Add-Type -AssemblyName UIAutomationClient
+Add-Type -AssemblyName UIAutomationTypes
+function Find-ByName([System.Windows.Automation.AutomationElement]$root, [string]$name) { $c = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name); for ($i=0; $i -lt 40; $i++) { $x = $root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $c); if ($x) { return $x }; Start-Sleep -Milliseconds 150 }; return $null }
+function Invoke-ButtonIndex([System.Windows.Automation.AutomationElement]$root, [int]$index) { $c = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button); $buttons = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $c); if ($buttons.Count -le $index) { throw "Button index bulunamadı: $index" }; $buttons[$index].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke(); Start-Sleep -Milliseconds 700 }
+function Find-Window([string]$name) { $c = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $name); [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $c) }
+function Find-SecondaryWindow([int]$mainHandle) { $c = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Window); $windows = [System.Windows.Automation.AutomationElement]::RootElement.FindAll([System.Windows.Automation.TreeScope]::Descendants, $c); $windows | Where-Object { $_.Current.NativeWindowHandle -ne $mainHandle } | Select-Object -Last 1 }
+function Close-Window([System.Windows.Automation.AutomationElement]$w) { if ($w) { try { $w.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close() } catch {}; Start-Sleep -Milliseconds 500 } }
+$exe = Join-Path $PSScriptRoot 'src\DersDagitim.Wpf\bin\Debug\net9.0-windows\DersDagitim.Wpf.exe'
+$p = $null; $main = $data = $lab = $avail = $report = $null
+try {
+    $p = Start-Process $exe -WorkingDirectory (Split-Path $exe) -PassThru; Start-Sleep -Seconds 4; $p.Refresh()
+    if ($p.MainWindowHandle -eq 0) { throw 'Ana pencere açılmadı' }
+    $main = [System.Windows.Automation.AutomationElement]::FromHandle($p.MainWindowHandle); "MAIN: $($main.Current.Name)"
+    Invoke-ButtonIndex $main 8; $lab = Find-SecondaryWindow $p.MainWindowHandle; if (-not $lab) { throw 'Laboratuvar penceresi açılmadı' }; "LAB: $($lab.Current.Name)"; Close-Window $lab
+    Invoke-ButtonIndex $main 2; $data = Find-SecondaryWindow $p.MainWindowHandle; if (-not $data) { throw 'Veri yönetimi açılmadı' }; "DATA: $($data.Current.Name)"
+    Invoke-ButtonIndex $data 0; $avail = Find-SecondaryWindow $p.MainWindowHandle; if (-not $avail) { throw 'Uygunluk ekranı açılmadı' }; "AVAILABILITY: $($avail.Current.Name)"; Close-Window $avail
+    Invoke-ButtonIndex $data 1; $report = Find-SecondaryWindow $p.MainWindowHandle; if (-not $report) { throw 'Öğretmen raporu açılmadı' }; $all = $report.FindAll([System.Windows.Automation.TreeScope]::Descendants, [System.Windows.Automation.Condition]::TrueCondition); $names = ($all | ForEach-Object { $_.Current.Name }) -join ' | '; "REPORT: $($report.Current.Name)"; "VOCATIONAL_VISIBLE: $($names.Contains('İşletmelerde Mesleki Eğitim'))"; "TOTAL_31_VISIBLE: $($names.Contains('31 saat'))"
+} finally { Close-Window $report; Close-Window $avail; Close-Window $data; Close-Window $lab; Close-Window $main; if ($p -and -not $p.HasExited) { Stop-Process $p.Id -Force } }

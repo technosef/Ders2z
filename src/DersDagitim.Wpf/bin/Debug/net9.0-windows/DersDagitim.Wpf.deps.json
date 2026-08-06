@@ -1,0 +1,128 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "DersDagitim.Wpf/1.0.0": {
+        "dependencies": {
+          "DersDagitim.Application": "1.0.0",
+          "DersDagitim.Infrastructure": "1.0.0",
+          "SQLitePCLRaw.batteries_v2": "2.0.6.1341",
+          "SQLitePCLRaw.core": "2.0.6.1341",
+          "SQLitePCLRaw.provider.e_sqlite3": "2.0.6.1341"
+        },
+        "runtime": {
+          "DersDagitim.Wpf.dll": {}
+        }
+      },
+      "DersDagitim.Application/1.0.0": {
+        "dependencies": {
+          "DersDagitim.Domain": "1.0.0"
+        },
+        "runtime": {
+          "DersDagitim.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "DersDagitim.Domain/1.0.0": {
+        "runtime": {
+          "DersDagitim.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "DersDagitim.Infrastructure/1.0.0": {
+        "dependencies": {
+          "DersDagitim.Application": "1.0.0",
+          "DersDagitim.Domain": "1.0.0"
+        },
+        "runtime": {
+          "DersDagitim.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "SQLitePCLRaw.batteries_v2/2.0.6.1341": {
+        "runtime": {
+          "SQLitePCLRaw.batteries_v2.dll": {
+            "assemblyVersion": "2.0.6.1341",
+            "fileVersion": "2.0.6.1341"
+          }
+        }
+      },
+      "SQLitePCLRaw.core/2.0.6.1341": {
+        "runtime": {
+          "SQLitePCLRaw.core.dll": {
+            "assemblyVersion": "2.0.6.1341",
+            "fileVersion": "2.0.6.1341"
+          }
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/2.0.6.1341": {
+        "runtime": {
+          "SQLitePCLRaw.provider.e_sqlite3.dll": {
+            "assemblyVersion": "2.0.6.1341",
+            "fileVersion": "2.0.6.1341"
+          }
+        }
+      },
+      "Microsoft.Data.Sqlite/6.0.0.0": {
+        "runtime": {
+          "Microsoft.Data.Sqlite.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52301"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DersDagitim.Wpf/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DersDagitim.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DersDagitim.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "DersDagitim.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SQLitePCLRaw.batteries_v2/2.0.6.1341": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SQLitePCLRaw.core/2.0.6.1341": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SQLitePCLRaw.provider.e_sqlite3/2.0.6.1341": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Data.Sqlite/6.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

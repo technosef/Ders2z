@@ -1,0 +1,187 @@
+<Window x:Class="DersDagitim.Wpf.AscScheduleWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Mevcut ASC Programı" Width="1400" Height="850" Background="#F8FAFC">
+  <Window.Resources>
+    <Style x:Key="DayHeaderStyle" TargetType="Border">
+      <Setter Property="Background" Value="#F1F5F9"/>
+      <Setter Property="BorderBrush" Value="#E2E8F0"/>
+      <Setter Property="BorderThickness" Value="0,0,1,1"/>
+      <Setter Property="Padding" Value="8"/>
+      <Setter Property="CornerRadius" Value="4,4,0,0"/>
+    </Style>
+    <Style x:Key="TimeHeaderStyle" TargetType="Border">
+      <Setter Property="Background" Value="#F1F5F9"/>
+      <Setter Property="BorderBrush" Value="#E2E8F0"/>
+      <Setter Property="BorderThickness" Value="0,1,0,1"/>
+      <Setter Property="Padding" Value="8"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style x:Key="CardCellStyle" TargetType="Border">
+      <Setter Property="BorderBrush" Value="#E2E8F0"/>
+      <Setter Property="BorderThickness" Value="0,1,1,0"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="Padding" Value="4"/>
+      <Setter Property="CornerRadius" Value="2"/>
+      <Setter Property="ToolTip">
+        <Setter.Value>
+          <MultiBinding StringFormat="{}{0} - {1}\n{2} ({3})">
+            <Binding Path="ClassName"/>
+            <Binding Path="CourseName"/>
+            <Binding Path="TeacherName"/>
+            <Binding Path="Period"/>
+          </MultiBinding>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+  
+  <Grid Margin="24">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="280"/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    
+    <!-- Baslik -->
+    <TextBlock Text="Mevcut ASC Programı" FontSize="26" FontWeight="SemiBold" Foreground="#0F172A" Grid.ColumnSpan="2"/>
+    
+    <!-- Filtre ve Kontroller -->
+    <DockPanel Grid.Row="1" Grid.Column="0" Margin="0,12,0,14">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+        <TextBox x:Name="FilterText" Width="260" Margin="0,0,10,0" TextChanged="FilterChanged" ToolTip="Sınıf, ders, öğretmen veya oda ara"/>
+        <ComboBox x:Name="DayCombo" Width="140" Margin="0,0,10,0" SelectionChanged="FilterChanged">
+          <ComboBoxItem Content="Tüm günler" IsSelected="True"/>
+          <ComboBoxItem Content="Pazartesi"/>
+          <ComboBoxItem Content="Salı"/>
+          <ComboBoxItem Content="Çarşamba"/>
+          <ComboBoxItem Content="Perşembe"/>
+          <ComboBoxItem Content="Cuma"/>
+        </ComboBox>
+      </StackPanel>
+      
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+        <TextBlock Text="Hedef saat:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+        <TextBox x:Name="PeriodText" Width="45" Text="1" Margin="0,0,10,0"/>
+        <Button Content="Seçili kartı taşı" Click="Move_Click" Padding="12,6" Margin="0,0,8,0"/>
+        <Button Content="Seçili kartı kaldır" Click="Remove_Click" Padding="12,6" Margin="0,0,8,0"/>
+        <Button Content="Kaldırmayı geri al" Click="Restore_Click" Padding="12,6" Margin="0,0,8,0"/>
+        <Button Content="PDF olarak kaydet" Click="ExportPdf_Click" Padding="12,6"/>
+      </StackPanel>
+      
+      <TextBlock x:Name="StatusText" Margin="16,6,0,0" Foreground="#475569"/>
+    </DockPanel>
+    
+    <!-- Matris Tabanlı Zaman Çizelgesi -->
+    <ScrollViewer Grid.Row="2" Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+      <Grid x:Name="ScheduleGrid">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="80"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Baslik Satiri -->
+        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Saat\Gün" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Pazartesi" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Salı" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="3" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Çarşamba" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="4" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Perşembe" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="5" Style="{StaticResource DayHeaderStyle}">
+          <TextBlock Text="Cuma" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+        </Border>
+        
+        <!-- Saat Satirlari (1-10) -->
+        <ItemsControl x:Name="ScheduleRows" Grid.Row="1" Grid.ColumnSpan="6">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid Grid.ColumnSpan="6">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="80"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Saat numarasi -->
+                <Border Grid.Column="0" Style="{StaticResource TimeHeaderStyle}">
+                  <TextBlock Text="{Binding Hour}" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                </Border>
+                
+                <!-- Gun hücreleri -->
+                <Border Grid.Column="1" Style="{StaticResource CardCellStyle}" Background="{Binding MondayColor}" 
+                        PreviewMouseLeftButtonDown="Cell_Click" Tag="Monday" AllowDrop="True"
+                        Drop="Cell_Drop" PreviewMouseMove="Cell_PreviewMouseMove"
+                        DragEnter="Cell_DragEnter" DragLeave="Cell_DragLeave">
+                  <TextBlock Text="{Binding MondayText}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource CardCellStyle}" Background="{Binding TuesdayColor}"
+                        PreviewMouseLeftButtonDown="Cell_Click" Tag="Tuesday" AllowDrop="True"
+                        Drop="Cell_Drop" PreviewMouseMove="Cell_PreviewMouseMove"
+                        DragEnter="Cell_DragEnter" DragLeave="Cell_DragLeave">
+                  <TextBlock Text="{Binding TuesdayText}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource CardCellStyle}" Background="{Binding WednesdayColor}"
+                        PreviewMouseLeftButtonDown="Cell_Click" Tag="Wednesday" AllowDrop="True"
+                        Drop="Cell_Drop" PreviewMouseMove="Cell_PreviewMouseMove"
+                        DragEnter="Cell_DragEnter" DragLeave="Cell_DragLeave">
+                  <TextBlock Text="{Binding WednesdayText}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="4" Style="{StaticResource CardCellStyle}" Background="{Binding ThursdayColor}"
+                        PreviewMouseLeftButtonDown="Cell_Click" Tag="Thursday" AllowDrop="True"
+                        Drop="Cell_Drop" PreviewMouseMove="Cell_PreviewMouseMove"
+                        DragEnter="Cell_DragEnter" DragLeave="Cell_DragLeave">
+                  <TextBlock Text="{Binding ThursdayText}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                </Border>
+                <Border Grid.Column="5" Style="{StaticResource CardCellStyle}" Background="{Binding FridayColor}"
+                        PreviewMouseLeftButtonDown="Cell_Click" Tag="Friday" AllowDrop="True"
+                        Drop="Cell_Drop" PreviewMouseMove="Cell_PreviewMouseMove"
+                        DragEnter="Cell_DragEnter" DragLeave="Cell_DragLeave">
+                  <TextBlock Text="{Binding FridayText}" TextTrimming="CharacterEllipsis" HorizontalAlignment="Center"/>
+                </Border>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </ScrollViewer>
+    
+    <!-- Sağ Detay Paneli -->
+    <Border Grid.Row="2" Grid.Column="1" Margin="12,0,0,0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1,0,0,0" Padding="16">
+      <StackPanel>
+        <TextBlock Text="Seçili Kart Detayı" FontSize="16" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,12"/>
+        <TextBlock x:Name="SelectedCardText" Text="Henüz bir kart seçilmedi." Foreground="#64748B" TextWrapping="Wrap"/>
+        <StackPanel Margin="0,16,0,0" Visibility="Collapsed" x:Name="DetailPanel">
+          <TextBlock Text="Sınıf:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailClass" Foreground="#475569" Margin="0,0,0,8"/>
+          <TextBlock Text="Ders:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailCourse" Foreground="#475569" Margin="0,0,0,8"/>
+          <TextBlock Text="Öğretmen:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailTeacher" Foreground="#475569" Margin="0,0,0,8"/>
+          <TextBlock Text="Derslik:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailResource" Foreground="#475569" Margin="0,0,0,8"/>
+          <TextBlock Text="Gün/Saat:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailTime" Foreground="#475569" Margin="0,0,0,8"/>
+          <TextBlock Text="Durum:" FontWeight="SemiBold" Margin="0,0,0,4"/>
+          <TextBlock x:Name="DetailStatus" Foreground="#475569"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

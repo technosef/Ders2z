@@ -126,3 +126,10 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ WPF sürümü `0.9.0-dev` olarak proje metadata'sına bağlandı.
 - ✅ Güncelleme kontrol butonu eklendi; otomatik güncelleme altyapısı için ileride bağlanacak kanal bilgisi ekranda gösteriliyor.
 - ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Manuel Düzenleme Görünürlüğü
+
+- ✅ Taslak ekranının sağ paneline açık `Manuel düzenleme` bölümü eklendi.
+- ✅ Seçili ders gün/saat seçilerek butonla taşınabilir hale getirildi.
+- ✅ Seçili atamayı kaldırma manuel panelde görünür hale getirildi.
+- ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.

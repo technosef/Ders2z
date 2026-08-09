@@ -161,6 +161,22 @@
           <TextBlock Text="Durum:" FontWeight="SemiBold" Margin="0,0,0,4"/>
           <TextBlock x:Name="DetailStatus" Foreground="#475569"/>
         </StackPanel>
+
+        <Border Margin="0,22,0,0" Padding="12" Background="#EFF6FF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="6">
+          <StackPanel>
+            <TextBlock Text="Manuel düzenleme" FontSize="16" FontWeight="SemiBold" Foreground="#1E3A8A"/>
+            <TextBlock Text="Bir ders hücresi seçin; sonra gün/saat belirleyip uygula. Sınıf veya öğretmen filtresi seçildiğinde hücreler tek derse iner ve sürükle-bırak da kullanılır." Foreground="#334155" TextWrapping="Wrap" Margin="0,8,0,12"/>
+
+            <TextBlock Text="Yeni gün" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <ComboBox x:Name="ManualDayCombo" Height="30" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Yeni ders saati" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <ComboBox x:Name="ManualHourCombo" Height="30" Margin="0,0,0,12"/>
+
+            <Button Content="Seçili dersi bu saate taşı" Click="ManualMove_Click" Padding="10,7" Margin="0,0,0,8"/>
+            <Button Content="Seçili atamayı kaldır" Click="Remove_Click" Padding="10,7"/>
+          </StackPanel>
+        </Border>
       </StackPanel>
     </Border>
   </Grid>

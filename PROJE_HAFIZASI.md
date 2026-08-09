@@ -127,3 +127,11 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ WPF uygulama sürümü proje dosyasından `0.9.0-dev` olarak okunur hale getirildi.
 - ✅ Güncelleme kontrolü paneli eklendi; otomatik güncelleme sunucusu henüz bağlı olmadığı için kanal bilgisi `www.ikizsoft.com` olarak gösteriliyor.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Manuel Düzenleme Görünürlüğü
+
+- ✅ `DraftScheduleWindow` sağ detay paneline görünür `Manuel düzenleme` alanı eklendi.
+- ✅ Seçili ders için `Yeni gün` ve `Yeni ders saati` seçilip `Seçili dersi bu saate taşı` butonuyla kalıcı taşıma yapılabiliyor.
+- ✅ Seçili atamayı kaldırma butonu aynı manuel panel içinde tekrar gösterildi.
+- ✅ Seçilen atamanın mevcut gün/saat bilgisi manuel düzenleme kontrollerine otomatik yansıyor.
+- ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.

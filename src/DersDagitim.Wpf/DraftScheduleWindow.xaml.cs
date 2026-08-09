@@ -20,7 +20,23 @@ public partial class DraftScheduleWindow : Window
     public DraftScheduleWindow()
     {
         InitializeComponent();
+        InitializeManualEditControls();
         Refresh();
+    }
+
+    private void InitializeManualEditControls()
+    {
+        ManualDayCombo.ItemsSource = new[]
+        {
+            new DayOption("Pazartesi", DayOfWeek.Monday),
+            new DayOption("Salı", DayOfWeek.Tuesday),
+            new DayOption("Çarşamba", DayOfWeek.Wednesday),
+            new DayOption("Perşembe", DayOfWeek.Thursday),
+            new DayOption("Cuma", DayOfWeek.Friday)
+        };
+        ManualDayCombo.DisplayMemberPath = nameof(DayOption.Name);
+        ManualDayCombo.SelectedValuePath = nameof(DayOption.Day);
+        ManualHourCombo.ItemsSource = Enumerable.Range(1, 10).ToArray();
     }
 
     private void Refresh()
@@ -205,7 +221,32 @@ public partial class DraftScheduleWindow : Window
         DetailResource.Text = req?.Resource?.Name ?? "-";
         DetailTime.Text = $"{GetDayName(assignment.Day)} - {assignment.LessonNumber}. saat";
         DetailStatus.Text = assignment.IsManual ? "Manuel korundu" : "Otomatik taslak";
+        ManualDayCombo.SelectedValue = assignment.Day;
+        ManualHourCombo.SelectedItem = assignment.LessonNumber;
         DetailPanel.Visibility = Visibility.Visible;
+    }
+
+    private async void ManualMove_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedAssignment is null)
+        {
+            ActionText.Text = "Önce tek ders içeren bir hücre seçin.";
+            return;
+        }
+
+        if (ManualDayCombo.SelectedValue is not DayOfWeek targetDay || ManualHourCombo.SelectedItem is not int targetHour)
+        {
+            ActionText.Text = "Taşıma için gün ve ders saati seçin.";
+            return;
+        }
+
+        var result = await DraftWorkspace.MoveAsync(_selectedAssignment.Id, targetHour, targetDay);
+        ActionText.Text = result.Message;
+        if (result.Success)
+        {
+            _selectedAssignment = null;
+            Refresh();
+        }
     }
 
     private static LessonRequest? RequestFor(LessonAssignment assignment) =>
@@ -326,4 +367,6 @@ public partial class DraftScheduleWindow : Window
         public Brush FridayColor { get; set; } = Brushes.White;
         public List<LessonAssignment> FridayAssignments { get; set; } = new();
     }
+
+    private sealed record DayOption(string Name, DayOfWeek Day);
 }

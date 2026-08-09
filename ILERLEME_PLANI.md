@@ -133,3 +133,10 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ Seçili ders gün/saat seçilerek butonla taşınabilir hale getirildi.
 - ✅ Seçili atamayı kaldırma manuel panelde görünür hale getirildi.
 - ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Kullanım Kılavuzu
+
+- ✅ Resimli kullanım kılavuzu üretildi: `docs/DersDagitim_Kullanim_Kilavuzu.docx`.
+- ✅ İçerik sıfırdan kullanan kişi için adım adım yazıldı.
+- ✅ Kılavuzda 14 bölüm, 5 tablo ve 6 görsel var.
+- ⚠️ Render/PDF kalite kontrolü ortamda `soffice`/`winword` bulunmadığı için yapılamadı; DOCX yapısal kontrolü geçti.

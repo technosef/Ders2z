@@ -135,3 +135,11 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Seçili atamayı kaldırma butonu aynı manuel panel içinde tekrar gösterildi.
 - ✅ Seçilen atamanın mevcut gün/saat bilgisi manuel düzenleme kontrollerine otomatik yansıyor.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Kullanım Kılavuzu
+
+- ✅ Sıfırdan kullanacak idareci için resimli kullanım kılavuzu hazırlandı.
+- ✅ Çıktı dosyası: `docs/DersDagitim_Kullanim_Kilavuzu.docx`.
+- ✅ Kılavuzda ana iş akışı, ASC XML içe/dışa aktarım, taslak üretme, manuel düzenleme, çakışma kontrolü, sınıf/kaynak çizelgeleri, öğretmen raporu, okul genel görünümü ve güncelleme/hakkında bölümü anlatıldı.
+- ✅ Kılavuz yapısal kontrolü: 14 bölüm, 5 tablo, 6 görsel.
+- ⚠️ DOCX render/PDF doğrulaması yapılamadı; bu ortamda `soffice` ve `winword` komutları bulunmuyor.

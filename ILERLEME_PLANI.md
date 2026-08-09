@@ -173,3 +173,13 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ Dağılım: Bilişim 20, Elektrik-Elektronik 14, Biyomedikal 12.
 - ✅ Tekrarlanabilir atama betiği eklendi: `tools/apply_class_departments_from_excel.py`.
 - ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+
+## 9 Agustos 2026 Sinif Kapi Listeleri ve Sinif Ogretmenligi
+
+- Tamamlandi: Sinif/kaynak cizelgesi ekranina kapilara asilacak sinif bazli haftalik HTML liste cikisi eklendi.
+- Tamamlandi: Belirli sinif seciliyken sinif ogretmeni atama ve atamayi kaldirma UI'si eklendi.
+- Tamamlandi: `ClassTeacherAssignments` SQLite kalici kayit modeli eklendi.
+- Dogrulandi: Canli DB'de tablo olustu; mevcut atama sayisi 0. Sinif ogretmenlikleri kullanici tarafindan henuz atanmamis.
+- Dogrulandi: 522 lesson / 1259 card solver sayilari korundu.
+- Dogrulandi: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari.
+- Devam: Kullanici sinif cizelgesi ekranindan her sinifin ogretmenini tek tek atayacak veya sonraki adimda Excel'den toplu atama araci yazilacak.

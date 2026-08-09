@@ -16,7 +16,9 @@ public partial class App : System.Windows.Application
         try
         {
             var dir = GetWritableDataDirectory();
-            Dashboard = new DashboardService(new SqliteSchoolRepository(Path.Combine(dir, "ders-dagitim.db")));
+            var repository = new SqliteSchoolRepository(Path.Combine(dir, "ders-dagitim.db"));
+            repository.InitializeAsync().GetAwaiter().GetResult();
+            Dashboard = new DashboardService(repository);
             Dashboard.LoadAsync().GetAwaiter().GetResult();
             new MainWindow().Show();
         }

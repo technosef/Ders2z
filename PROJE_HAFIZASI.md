@@ -186,3 +186,13 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Tekrarlanabilir araç eklendi: `tools/apply_class_departments_from_excel.py`.
 - ✅ Yedekler: `backups/ders-dagitim-before-class-department-20260809-103743.db` ve `backups/ders-dagitim-before-class-department-20260809-103948.db`.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.
+
+## 9 Agustos 2026 Sinif Kapi Listeleri ve Sinif Ogretmenligi
+
+- Sinif/kaynak cizelgesi ekrani kapilara asilacak haftalik sinif listelerini HTML olarak uretir hale getirildi.
+- Her sinif icin 5 gun x 10 ders saati matrisinde ders, ogretmen ve kaynak bilgisi yaziliyor.
+- Sinif ogretmenligi icin `ClassTeacherAssignments` SQLite tablosu ve repository metotlari eklendi.
+- Sinif cizelgesi ekraninda belirli sinif secildiginde sinif ogretmeni atanabilir veya atama kaldirilabilir.
+- Canli DB dogrulamasi: `ClassTeacherAssignments` tablosu olustu, mevcut atama sayisi 0; yani sinif ogretmenlikleri henuz kullanici tarafindan atanmis degil.
+- Canli solver sayilari korundu: 522 lesson, 1259 card, 522 mapped lesson, 1259 protected card.
+- Uygulama acilisinda `InitializeAsync` calisacak sekilde duzeltildi; yeni SQLite tablolarinin olusmasi manuel test aracina bagli kalmaz.

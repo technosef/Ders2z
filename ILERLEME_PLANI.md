@@ -183,3 +183,11 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - Dogrulandi: 522 lesson / 1259 card solver sayilari korundu.
 - Dogrulandi: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari.
 - Devam: Kullanici sinif cizelgesi ekranindan her sinifin ogretmenini tek tek atayacak veya sonraki adimda Excel'den toplu atama araci yazilacak.
+
+## 9 Agustos 2026 aSc Tarzi Sinif/Lab Plan Ciktisi
+
+- Tamamlandi: `2026-LABORATUVAR.pdf` referansindaki A4 yatay tablo yapisi sinif/lab ciktisina uygulandi.
+- Tamamlandi: PDF/yazici ciktisi DataGrid yerine cok sayfali haftalik plan dokumani basar.
+- Tamamlandi: HTML cikti da ayni sayfa duzeniyle sinif ve kaynak/lab modlarini destekler.
+- Tamamlandi: Ogle aralari dikey kolon, ders bloklari yatay birlesik hucre olarak uretilir.
+- Dogrulandi: Derleme basarili, 0 hata, 0 uyari.

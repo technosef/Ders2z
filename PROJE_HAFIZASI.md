@@ -196,3 +196,11 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - Canli DB dogrulamasi: `ClassTeacherAssignments` tablosu olustu, mevcut atama sayisi 0; yani sinif ogretmenlikleri henuz kullanici tarafindan atanmis degil.
 - Canli solver sayilari korundu: 522 lesson, 1259 card, 522 mapped lesson, 1259 protected card.
 - Uygulama acilisinda `InitializeAsync` calisacak sekilde duzeltildi; yeni SQLite tablolarinin olusmasi manuel test aracina bagli kalmaz.
+
+## 9 Agustos 2026 aSc Tarzi Sinif/Lab Plan Ciktisi
+
+- Kullanici referansi `C:\Users\masco\Desktop\2026-LABORATUVAR.pdf` incelendi: 13 sayfa, A4 yatay, gunler solda, 1-10 ders saatleri ustte, ogle aralari dikey kolon, blok dersler yatay birlesik hucre.
+- `LaboratoryScheduleWindow` PDF/yazici ciktisi artik DataGrid listesini degil, referanstaki gibi yatay haftalik plan sayfalari uretir.
+- HTML cikti da ayni aSc tarzi tabloya cevrildi; sinif ve lab/kaynak modunda secili oge veya tum ogeler icin sayfa sayfa uretilir.
+- Lab planinda hucre ortasinda sinif, ustte ders kisaltmasi ve ogretmen inisiyali; sinif planinda hucre ortasinda kaynak/lab bilgisi gosterilir.
+- Dogrulama: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari.

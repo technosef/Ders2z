@@ -210,3 +210,20 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - Ana pencere ve kullaniciya acilan tum alt pencerelere `WindowState="Maximized"` eklendi.
 - Kapsam: ana ekran, veri yonetimi, mevcut ASC programi, taslak cizelge, cakisma kontrolu, ogretmen uygunluk, ogretmen raporu, okul genel gorunumu, sinif/kaynak haftalik programlari, hakkinda/guncelleme.
 - Dogrulama: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari; EXE smoke testi gecti.
+
+## 9 Agustos 2026 Eksik Plan ve Sinif Ogretmenligi Toplu Aktarim
+
+- Guncel eksikler onceliklendirildi: sinif ogretmenligi toplu atama, gercek guncelleme kanali, kullanim kilavuzu render/PDF dogrulamasi, secmeli ders/kurs modulleri, tam UI otomasyon testi.
+- Ilk somut eksik kapatildi: `LaboratoryScheduleWindow` sinif ogretmeni paneline `Sablon CSV` ve `CSV'den toplu ata` islemleri eklendi.
+- CSV sablonu `Sinif;Ogretmen;AkademikYil` kolonlariyla tum siniflari listeler; mevcut atamalar varsa ogretmen adini doldurur.
+- CSV importu sinif ve ogretmen adlarini Turkce karakter/bosluk/kucuk-buyuk harf farkina dayanirli esler, eslesmeyen satirlari durum satirinda raporlar.
+- `nobet.xlsx` icinde sinif ogretmenligi verisi aranmak istendi ancak dosya yetkili okuma denemesinde zaman asimina girdi; uygulama tarafinda CSV tabanli guvenli import yolu eklendi.
+- Dogrulama: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari; EXE smoke testi gecti.
+
+## 9 Agustos 2026 Guncelleme Manifesti
+
+- `AboutUpdateWindow` artik sabit "sunucu bagli degil" metni yerine uygulama klasorundeki `update-manifest.json` dosyasini okuyor.
+- Manifest alanlari: `latestVersion`, `downloadUrl`, `releaseNotes`.
+- Yerel surum assembly informational version degeriyle karsilastiriliyor; yeni surum varsa indirme adresi ve notlar ekranda gosteriliyor.
+- `src/DersDagitim.Wpf/update-manifest.json` proje ciktisina `PreserveNewest` olarak kopyalanacak sekilde eklendi.
+- Dogrulama: manifest `bin/Debug/net9.0-windows/update-manifest.json` konumuna kopyalandi; `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari; EXE smoke testi gecti.

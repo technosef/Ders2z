@@ -25,7 +25,9 @@
         <TextBlock Text="Sınıf öğretmeni" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
         <ComboBox x:Name="ClassTeacherCombo" Width="260" Height="30" Margin="0,0,8,0"/>
         <Button Content="Seçili sınıfa ata" Click="AssignClassTeacher_Click" Padding="12,6" Margin="0,0,8,0"/>
-        <Button Content="Atamayı kaldır" Click="RemoveClassTeacher_Click" Padding="12,6"/>
+        <Button Content="Atamayı kaldır" Click="RemoveClassTeacher_Click" Padding="12,6" Margin="0,0,8,0"/>
+        <Button Content="Şablon CSV" Click="ExportClassTeacherTemplate_Click" Padding="12,6" Margin="0,0,8,0"/>
+        <Button Content="CSV'den toplu ata" Click="ImportClassTeachers_Click" Padding="12,6"/>
       </StackPanel>
     </Border>
 

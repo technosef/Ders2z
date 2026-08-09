@@ -196,3 +196,18 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 
 - Tamamlandi: Ana ekran ve alt ekranlar varsayilan olarak tam ekran/maximized acilir hale getirildi.
 - Dogrulandi: Derleme basarili, 0 hata, 0 uyari; EXE smoke testi gecti.
+
+## 9 Agustos 2026 Eksik Plan
+
+- Tamamlandi: Sinif ogretmenlikleri icin CSV sablon uretme ve CSV'den toplu atama eklendi.
+- Tamamlandi: Guncelleme/Hakkinda ekranini gercek bir surum manifest dosyasina bagla.
+- Siradaki 2: Kullanim kilavuzunu PDF'e render edip gorsel kalite kontrolunu tamamla.
+- Siradaki 3: Secmeli ders planlama ve kurs/DYK entegrasyonu icin veri modeli ve ekran tasarimini baslat.
+- Siradaki 4: 522 lesson / 1259 card icin tam UI otomasyon smoke akisini yaz.
+- Dogrulandi: Derleme basarili, 0 hata, 0 uyari; EXE smoke testi gecti.
+
+## 9 Agustos 2026 Guncelleme Manifesti
+
+- Tamamlandi: `update-manifest.json` eklendi ve WPF cikti klasorune kopyalaniyor.
+- Tamamlandi: Guncelleme kontrolu manifestteki son surum, indirme adresi ve surum notlarini okuyor.
+- Dogrulandi: Manifest cikti klasorunde mevcut; derleme ve EXE smoke testi basarili.

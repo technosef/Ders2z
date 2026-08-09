@@ -27,5 +27,6 @@
       <Private>true</Private>
     </Reference>
     <None Include="$(UserProfile)\.nuget\packages\sqlitepclraw.lib.e_sqlite3\2.0.6\runtimes\win-x64\native\e_sqlite3.dll" Link="e_sqlite3.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="update-manifest.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

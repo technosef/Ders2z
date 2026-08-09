@@ -1,4 +1,5 @@
 using System.IO;
+using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Windows;
@@ -192,6 +193,88 @@ public partial class LaboratoryScheduleWindow : Window
         _classTeachers = await App.Dashboard.Repository.GetClassTeacherAssignmentsAsync();
         SyncClassTeacherPanel();
         StatusText.Text = $"{schoolClass.Name} sinif ogretmeni atamasi kaldirildi.";
+    }
+
+    private void ExportClassTeacherTemplate_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog { Filter = "Excel uyumlu CSV|*.csv", FileName = "sinif-ogretmenligi-sablonu.csv" };
+        if (dialog.ShowDialog() != true) return;
+
+        var teacherById = _teachers.ToDictionary(x => x.Id);
+        var assignmentByClass = _classTeachers.ToDictionary(x => x.ClassId);
+        var lines = new List<string> { "Sinif;Ogretmen;AkademikYil" };
+        lines.AddRange(_classes.OrderBy(x => x.Grade).ThenBy(x => x.Name).Select(schoolClass =>
+        {
+            assignmentByClass.TryGetValue(schoolClass.Id, out var assignment);
+            var teacher = assignment is not null && teacherById.TryGetValue(assignment.TeacherId, out var assignedTeacher)
+                ? assignedTeacher.FullName
+                : "";
+            var year = assignment?.AcademicYear ?? "2025/2026";
+            return $"{Csv(schoolClass.Name)};{Csv(teacher)};{Csv(year)}";
+        }));
+
+        File.WriteAllText(dialog.FileName, string.Join(Environment.NewLine, lines), new UTF8Encoding(true));
+        StatusText.Text = "Sinif ogretmenligi CSV sablonu hazirlandi.";
+    }
+
+    private async void ImportClassTeachers_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Filter = "Excel uyumlu CSV|*.csv|Tum dosyalar|*.*" };
+        if (dialog.ShowDialog() != true) return;
+
+        var classByName = _classes
+            .GroupBy(x => NormalizeKey(x.Name))
+            .ToDictionary(x => x.Key, x => x.First());
+        var teacherByName = _teachers
+            .GroupBy(x => NormalizeKey(x.FullName))
+            .ToDictionary(x => x.Key, x => x.First());
+
+        var imported = 0;
+        var skipped = new List<string>();
+        var lines = File.ReadAllLines(dialog.FileName, Encoding.UTF8)
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToArray();
+
+        foreach (var line in lines.Skip(1))
+        {
+            var parts = line.Split(';');
+            if (parts.Length < 2)
+            {
+                skipped.Add($"Eksik kolon: {line}");
+                continue;
+            }
+
+            var className = parts[0].Trim().Trim('"');
+            var teacherName = parts[1].Trim().Trim('"');
+            var academicYear = parts.Length >= 3 && !string.IsNullOrWhiteSpace(parts[2]) ? parts[2].Trim().Trim('"') : "2025/2026";
+            if (string.IsNullOrWhiteSpace(className) || string.IsNullOrWhiteSpace(teacherName)) continue;
+
+            if (!classByName.TryGetValue(NormalizeKey(className), out var schoolClass))
+            {
+                skipped.Add($"Sinif bulunamadi: {className}");
+                continue;
+            }
+
+            if (!teacherByName.TryGetValue(NormalizeKey(teacherName), out var teacher))
+            {
+                teacher = _teachers.FirstOrDefault(x => NormalizeKey(x.FullName).Contains(NormalizeKey(teacherName)) || NormalizeKey(teacherName).Contains(NormalizeKey(x.FullName)));
+            }
+
+            if (teacher is null)
+            {
+                skipped.Add($"Ogretmen bulunamadi: {teacherName}");
+                continue;
+            }
+
+            await App.Dashboard.Repository.SaveClassTeacherAssignmentAsync(new ClassTeacherAssignment(schoolClass.Id, teacher.Id, academicYear));
+            imported++;
+        }
+
+        _classTeachers = await App.Dashboard.Repository.GetClassTeacherAssignmentsAsync();
+        SyncClassTeacherPanel();
+        StatusText.Text = skipped.Count == 0
+            ? $"{imported} sinif ogretmenligi iceri aktarildi."
+            : $"{imported} atama aktarildi, {skipped.Count} satir atlandi: {string.Join(" | ", skipped.Take(5))}";
     }
 
     private SchoolClass? SelectedSchoolClass() =>
@@ -534,6 +617,27 @@ public partial class LaboratoryScheduleWindow : Window
     }
 
     private static string Html(string value) => WebUtility.HtmlEncode(value);
+
+    private static string Csv(string value)
+    {
+        if (!value.Contains(';') && !value.Contains('"') && !value.Contains('\n')) return value;
+        return $"\"{value.Replace("\"", "\"\"")}\"";
+    }
+
+    private static string NormalizeKey(string value)
+    {
+        var normalized = value.Trim().ToUpper(new CultureInfo("tr-TR")).Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(normalized.Length);
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark && !char.IsWhiteSpace(c) && c != '-' && c != '_' && c != '/')
+            {
+                builder.Append(c);
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
 
     private static string SafeFileName(string value)
     {

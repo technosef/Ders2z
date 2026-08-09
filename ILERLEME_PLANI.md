@@ -99,7 +99,8 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 
 - ✅ `.gitignore` eklendi.
 - ✅ `.vs`, `bin`, `obj` gibi IDE/build çıktıları dosya sisteminden silinmeden git takibinden çıkarıldı.
-- 🔄 GitHub remote: `https://github.com/technosef/Ders2z` bağlanıp push yapılacak.
+- ✅ GitHub remote bağlandı: `https://github.com/technosef/Ders2z.git`.
+- ✅ Remote geçmişi korunarak merge edildi ve `main` branch GitHub'a push edildi.
 - ✅ EXE smoke testi geçti; uygulama kısa süre çalışıp temiz kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push bekliyor; repoda `origin` remote tanımlı değil.

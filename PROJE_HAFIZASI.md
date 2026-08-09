@@ -102,7 +102,9 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 
 - ✅ `.gitignore` eklendi; `.vs/`, `bin/`, `obj/`, `tmp/`, `backups/`, yerel SQLite dosyaları ve PDF dosyaları yeni commit'lere yanlışlıkla eklenmeyecek.
 - ✅ Daha önce takip edilmiş IDE/build çıktıları `git rm --cached` ile yalnız git indeksinden çıkarıldı; dosya sistemindeki yerel dosyalara dokunulmadı.
-- ⚠️ GitHub push hâlâ remote URL bekliyor; repoda `origin` tanımlı değil ve `gh` CLI kurulu değil.
+- ✅ GitHub remote eklendi: `https://github.com/technosef/Ders2z.git`.
+- ✅ Remote geçmişi force push yapılmadan `ours` merge stratejisiyle yerel ana dalla bağlandı.
+- ✅ GitHub push başarılı: `main -> origin/main`.
 - ✅ EXE smoke: WPF uygulaması 6 saniye canlı kaldı ve kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push yapılamadı; repoda `origin` remote tanımlı değil.

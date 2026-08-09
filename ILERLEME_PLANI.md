@@ -140,3 +140,12 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ İçerik sıfırdan kullanan kişi için adım adım yazıldı.
 - ✅ Kılavuzda 14 bölüm, 5 tablo ve 6 görsel var.
 - ⚠️ Render/PDF kalite kontrolü ortamda `soffice`/`winword` bulunmadığı için yapılamadı; DOCX yapısal kontrolü geçti.
+
+## 9 Ağustos 2026 Sınıf Alan Ataması
+
+- ✅ Ana Excel dosyasından Bilişim alan bilgisi okundu.
+- ✅ ASC sınıf kodları ve ders içeriğiyle tüm sınıfların alanı atandı.
+- ✅ Canlı SQLite sonucu: 46/46 sınıf alanlı; boş `Department` kalmadı.
+- ✅ Dağılım: Bilişim 20, Elektrik-Elektronik 14, Biyomedikal 12.
+- ✅ Tekrarlanabilir atama betiği eklendi: `tools/apply_class_departments_from_excel.py`.
+- ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.

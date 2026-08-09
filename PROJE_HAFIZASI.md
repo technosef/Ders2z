@@ -143,3 +143,14 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Kılavuzda ana iş akışı, ASC XML içe/dışa aktarım, taslak üretme, manuel düzenleme, çakışma kontrolü, sınıf/kaynak çizelgeleri, öğretmen raporu, okul genel görünümü ve güncelleme/hakkında bölümü anlatıldı.
 - ✅ Kılavuz yapısal kontrolü: 14 bölüm, 5 tablo, 6 görsel.
 - ⚠️ DOCX render/PDF doğrulaması yapılamadı; bu ortamda `soffice` ve `winword` komutları bulunmuyor.
+
+## 9 Ağustos 2026 Sınıf Alan Ataması
+
+- ✅ Ana Excel kaynağı `C:\Users\masco\Desktop\bilisim_meslek_sinif_listesi2025 işletme.xlsx` okundu.
+- ✅ Excel başlığından `BİLİŞİM TEKNOLOJİLERİ ALANI` bilgisi ve `12/C`, `12/D` sınıfları doğrulandı.
+- ✅ ASC sınıf kodları ve ders adlarıyla alan eşlemesi tamamlandı: `(B/TB)=Bilişim Teknolojileri`, `(E/TE)=Elektrik-Elektronik Teknolojisi`, `(M/TBM)=Biyomedikal Cihaz Teknolojileri`.
+- ✅ Canlı SQLite sınıf alanları transaction ile güncellendi: 46/46 sınıf atandı, boş alan kalmadı.
+- ✅ Son dağılım: Bilişim Teknolojileri 20 sınıf, Elektrik-Elektronik Teknolojisi 14 sınıf, Biyomedikal Cihaz Teknolojileri 12 sınıf.
+- ✅ Tekrarlanabilir araç eklendi: `tools/apply_class_departments_from_excel.py`.
+- ✅ Yedekler: `backups/ders-dagitim-before-class-department-20260809-103743.db` ve `backups/ders-dagitim-before-class-department-20260809-103948.db`.
+- ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.

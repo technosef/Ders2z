@@ -51,7 +51,9 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var matchingImport = (await ReadAsync("SELECT l.ImportId FROM AscLessons l INNER JOIN AscXmlNodes n ON n.ImportId=l.ImportId AND n.ExternalId=l.SubjectId GROUP BY l.ImportId ORDER BY (SELECT ImportedAt FROM AscXmlImports i WHERE i.Id=l.ImportId) DESC LIMIT 1", r => r.GetString(0), t)).FirstOrDefault();
         var importFilter = string.IsNullOrWhiteSpace(matchingImport) ? "(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)" : $"'{matchingImport.Replace("'", "''")}'";
         var lessons = await ReadAsync($"SELECT ExternalId,ClassIds,SubjectId,TeacherIds,ClassroomIds,GroupIds,PeriodsPerCard,PeriodsPerWeek,DaysDefId,WeeksDefId,TermsDefId FROM AscLessons WHERE ImportId={importFilter}", r => new AscLessonRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.GetString(7), r.GetString(8), r.GetString(9), r.GetString(10)), t);
-        var cards = await ReadAsync($"SELECT LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId={importFilter}", r => new AscCardRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5)), t);
+        var cards = await ReadAsync($"SELECT Id,LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId={importFilter} ORDER BY Id", r => (Id: r.GetInt64(0), Record: new AscCardRecord(r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6))), t);
+        var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
+        var overrideById = overrides.ToDictionary(x => x.CardId);
         var groups = await ReadAsync($"SELECT ExternalId,ClassId FROM AscGroups WHERE ImportId={importFilter}", r => (Id: r.GetString(0), ClassId: r.GetString(1)), t);
         var nodes = await ReadAsync($"SELECT ExternalId,RawXml FROM AscXmlNodes WHERE ImportId={importFilter}", r => (Id: r.GetString(0), Raw: r.GetString(1)), t);
         var classes = await GetClassesAsync(t); var teachers = await GetTeachersAsync(t); var courses = await GetCoursesAsync(t); var resources = await GetResourcesAsync(t);
@@ -81,14 +83,27 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
             var request = new LessonRequest(Guid.NewGuid(), schoolClass, course, teacher, resource, weeklyHours, patterns); requests.Add(request); requestByExternal[lesson.Id] = request; mapped++;
         }
         var protectedCards = new List<LessonAssignment>();
+        var protectedCardIds = new Dictionary<Guid, long>();
+        var mappedCards = 0;
         if (includeProtectedCards)
             foreach (var card in cards)
-                if (requestByExternal.TryGetValue(card.LessonId, out var request) && int.TryParse(card.Period, out var period))
+                if (requestByExternal.TryGetValue(card.Record.LessonId, out var request) && int.TryParse(card.Record.Period, out var originalPeriod))
                 {
-                    var dayIndex = card.Days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) continue;
-                    protectedCards.Add(new LessonAssignment(Guid.NewGuid(), request.Class.Id, request.Course.Id, request.Teacher.Id, request.Resource?.Id, (DayOfWeek)((int)DayOfWeek.Monday + dayIndex), period, Number(lessons.First(x => x.Id == card.LessonId).PeriodsPerCard, 1), true));
+                    mappedCards++;
+                    var period = originalPeriod;
+                    var days = card.Record.Days;
+                    if (overrideById.TryGetValue(card.Id, out var change))
+                    {
+                        if (change.IsRemoved) continue;
+                        period = change.Period;
+                        days = change.Days;
+                    }
+                    var dayIndex = days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) continue;
+                    var assignment = new LessonAssignment(Guid.NewGuid(), request.Class.Id, request.Course.Id, request.Teacher.Id, request.Resource?.Id, (DayOfWeek)((int)DayOfWeek.Monday + dayIndex), period, Number(lessons.First(x => x.Id == card.Record.LessonId).PeriodsPerCard, 1), true);
+                    protectedCards.Add(assignment);
+                    protectedCardIds[assignment.Id] = card.Id;
                 }
-        return new AscSolverInput(requests, protectedCards, lessons.Count, cards.Count, mapped, protectedCards.Count);
+        return new AscSolverInput(requests, protectedCards, protectedCardIds, requestByExternal, lessons.Count, cards.Count, mapped, mappedCards);
     }
     public async Task<IReadOnlyList<AscScheduleCard>> GetAscScheduleCardsAsync(CancellationToken t = default)
     {
@@ -97,14 +112,16 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
         var overrideById = overrides.ToDictionary(x => x.CardId);
         var teachers = await GetTeachersAsync(t); var resources = await GetResourcesAsync(t); var result = new List<AscScheduleCard>();
-        for (var i = 0; i < Math.Min(cards.Count, input.ProtectedCards.Count); i++)
+        foreach (var card in cards)
         {
-            var card = cards[i]; var assignment = input.ProtectedCards[i]; var request = input.Requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId); if (request is null) continue;
-            var period = int.TryParse(card.Period, out var parsedPeriod) ? parsedPeriod : assignment.LessonNumber; var days = card.Days; var removed = false; var manual = false;
+            if (!input.RequestsByExternalLessonId.TryGetValue(card.LessonId, out var request)) continue;
+            var period = int.TryParse(card.Period, out var parsedPeriod) ? parsedPeriod : 1; var days = card.Days; var removed = false; var manual = false;
             if (overrideById.TryGetValue(card.Id, out var change)) { period = change.Period; days = change.Days; removed = change.IsRemoved; manual = true; }
-            var dayIndex = days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) dayIndex = (int)assignment.Day - (int)DayOfWeek.Monday;
-            var teacher = teachers.FirstOrDefault(x => x.Id == assignment.TeacherId); var resource = resources.FirstOrDefault(x => x.Id == assignment.ResourceId);
-            result.Add(new AscScheduleCard(card.Id, card.LessonId, request.Class.Name, request.Course.Name, request.Teacher.FullName, resource?.Name ?? "", teacher?.ColorCode ?? "", new[] { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma" }[Math.Clamp(dayIndex, 0, 4)], period, assignment.BlockLength, manual, removed));
+            var dayIndex = days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) continue;
+            var teacher = teachers.FirstOrDefault(x => x.Id == request.Teacher.Id); var resource = resources.FirstOrDefault(x => x.Id == request.Resource?.Id);
+            var lesson = input.Requests.First(x => x.Id == request.Id);
+            var blockLength = lesson.BlockPatterns.Select(x => int.TryParse(x.Split('+')[0], out var length) ? length : 1).DefaultIfEmpty(1).First();
+            result.Add(new AscScheduleCard(card.Id, card.LessonId, request.Class.Name, request.Course.Name, request.Teacher.FullName, resource?.Name ?? "", teacher?.ColorCode ?? "", new[] { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma" }[dayIndex], period, blockLength, manual, removed));
         }
         return result;
     }
@@ -150,12 +167,12 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         await ImportTeachersAsync(AscXmlCoreMapping.Teachers(preview), t); foreach (var x in AscXmlCoreMapping.Classes(preview)) await SaveClassAsync(x, t); foreach (var x in AscXmlCoreMapping.Courses(preview)) await SaveCourseAsync(x, t); foreach (var x in AscXmlCoreMapping.Resources(preview)) await SaveResourceAsync(x, t);
     }
     #if false
-    public async Task ExportAscXmlAsync(string path, CancellationToken t = default)
+    private async Task ExportAscXmlLegacyAsync(string path, CancellationToken t = default)
     {
         var teachers = await GetTeachersAsync(t); var classes = await GetClassesAsync(t); var courses = await GetCoursesAsync(t); var resources = await GetResourcesAsync(t); var groups = await ReadAsync("SELECT ExternalId,Name,ClassId,StudentIds,EntireClass,DivisionTag FROM AscGroups WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)", r => new AscGroupRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetInt32(4) == 1, r.GetString(5)), t); var lessons = await ReadAsync("SELECT ExternalId,ClassIds,SubjectId,TeacherIds,ClassroomIds,GroupIds,PeriodsPerCard,PeriodsPerWeek,DaysDefId,WeeksDefId,TermsDefId FROM AscLessons WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)", r => new AscLessonRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.GetString(7), r.GetString(8), r.GetString(9), r.GetString(10)), t); var cards = await ReadAsync("SELECT LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)", r => new AscCardRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5)), t); var periods = Enumerable.Range(1, 10).Select(i => new XElement("period", new XAttribute("name", $"{i}.Ders"), new XAttribute("short", i), new XAttribute("period", i))); var root = new XElement("timetable", new XAttribute("importtype", "database"), new XAttribute("displayname", "aSc Timetables 2012 XML"), new XElement("periods", periods), new XElement("breaks", new XElement("break", new XAttribute("name", "ÖĞLE ARASI 1"), new XAttribute("short", "ÖĞLE ARASI 1"), new XAttribute("break", 5), new XAttribute("starttime", "12:10"), new XAttribute("endtime", "13:00")), new XElement("break", new XAttribute("name", "ÖĞLE ARASI 2"), new XAttribute("short", "ÖĞLE ARASI 2"), new XElement("break", new XAttribute("name", "ÖĞLE ARASI 2"), new XAttribute("short", "ÖĞLE ARASI 2"), new XAttribute("break", 6), new XAttribute("starttime", "13:00"), new XAttribute("endtime", "13:50"))), new XElement("daysdefs", new[] { ("Pazartesi", "10000"), ("Salı", "01000"), ("Çarşamba", "00100"), ("Perşembe", "00010"), ("Cuma", "00001") }.Select((x, i) => new XElement("daysdef", new XAttribute("id", Guid.NewGuid().ToString("N")), new XAttribute("name", x.Item1), new XAttribute("short", x.Item1[..2]), new XAttribute("days", x.Item2)))), new XElement("subjects", courses.Select(x => new XElement("subject", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Abbreviation ?? x.Name[..Math.Min(3, x.Name.Length)])))), new XElement("teachers", teachers.Select(x => new XElement("teacher", new XAttribute("id", x.Id), new XAttribute("name", x.FullName), new XAttribute("short", x.Code ?? "")))), new XElement("classrooms", resources.Select(x => new XElement("classroom", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Name), new XAttribute("capacity", x.Capacity)))), new XElement("classes", classes.Select(x => new XElement("class", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Name)))), new XElement("groups", groups.Select(x => new XElement("group", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("classid", x.ClassId), new XAttribute("studentids", x.StudentIds), new XAttribute("entireclass", x.EntireClass ? 1 : 0), new XAttribute("divisiontag", x.DivisionTag)))), new XElement("lessons", lessons.Select(x => new XElement("lesson", new XAttribute("id", x.Id), new XAttribute("classids", x.ClassIds), new XAttribute("subjectid", x.SubjectId), new XAttribute("teacherids", x.TeacherIds), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("groupids", x.GroupIds), new XAttribute("periodspercard", x.PeriodsPerCard), new XAttribute("periodsperweek", x.PeriodsPerWeek), new XAttribute("daysdefid", x.DaysDefId), new XAttribute("weeksdefid", x.WeeksDefId), new XAttribute("termsdefid", x.TermsDefId)))), new XElement("cards", cards.Select(x => new XElement("card", new XAttribute("lessonid", x.LessonId), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("period", x.Period), new XAttribute("weeks", x.Weeks), new XAttribute("terms", x.Terms), new XAttribute("days", x.Days)))), new XElement("appmetadata", new XAttribute("source", "Ders Dağıtım Uygulaması"), new XAttribute("warning", "ASC dışı kadro, kilit ve manuel alanlar metadata ile ayrıca eşlenecektir."))); await using var fs = File.Create(path); var settings = new System.Xml.XmlWriterSettings { Async = true, Encoding = new System.Text.UTF8Encoding(false), Indent = true }; using var writer = System.Xml.XmlWriter.Create(fs, settings); root.Save(writer); await writer.FlushAsync();
     }
     #endif
-    public async Task ExportAscXmlAsync(string path, CancellationToken t = default)
+    private async Task ExportAscXmlLegacyActiveAsync(string path, CancellationToken t = default)
     {
         var groups = await ReadAsync("SELECT ExternalId,Name,ClassId,StudentIds,EntireClass,DivisionTag FROM AscGroups WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)", r => new AscGroupRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetInt32(4) == 1, r.GetString(5)), t);
         var lessons = await ReadAsync("SELECT ExternalId,ClassIds,SubjectId,TeacherIds,ClassroomIds,GroupIds,PeriodsPerCard,PeriodsPerWeek,DaysDefId,WeeksDefId,TermsDefId FROM AscLessons WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1)", r => new AscLessonRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.GetString(7), r.GetString(8), r.GetString(9), r.GetString(10)), t);
@@ -164,9 +181,54 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var root = new XElement("timetable", new XAttribute("importtype", "database"), new XAttribute("displayname", "aSc Timetables 2012 XML"), new XElement("periods", Enumerable.Range(1, 10).Select(i => new XElement("period", new XAttribute("name", $"{i}.Ders"), new XAttribute("short", i), new XAttribute("period", i)))), new XElement("breaks", new XElement("break", new XAttribute("name", "ÖĞLE ARASI 1"), new XAttribute("short", "ÖĞLE ARASI 1"), new XAttribute("break", 5), new XAttribute("starttime", "12:10"), new XAttribute("endtime", "13:00")), new XElement("break", new XAttribute("name", "ÖĞLE ARASI 2"), new XAttribute("short", "ÖĞLE ARASI 2"), new XAttribute("break", 6), new XAttribute("starttime", "13:00"), new XAttribute("endtime", "13:50"))), new XElement("subjects", courses.Select(x => new XElement("subject", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Abbreviation ?? "")))), new XElement("teachers", teachers.Select(x => new XElement("teacher", new XAttribute("id", x.Id), new XAttribute("name", x.FullName), new XAttribute("short", x.Code ?? "")))), new XElement("classrooms", resources.Select(x => new XElement("classroom", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Name), new XAttribute("capacity", x.Capacity)))), new XElement("classes", classes.Select(x => new XElement("class", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("short", x.Name)))), new XElement("groups", groups.Select(x => new XElement("group", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("classid", x.ClassId), new XAttribute("studentids", x.StudentIds), new XAttribute("entireclass", x.EntireClass ? 1 : 0), new XAttribute("divisiontag", x.DivisionTag)))), new XElement("lessons", lessons.Select(x => new XElement("lesson", new XAttribute("id", x.Id), new XAttribute("classids", x.ClassIds), new XAttribute("subjectid", x.SubjectId), new XAttribute("teacherids", x.TeacherIds), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("groupids", x.GroupIds), new XAttribute("periodspercard", x.PeriodsPerCard), new XAttribute("periodsperweek", x.PeriodsPerWeek), new XAttribute("daysdefid", x.DaysDefId), new XAttribute("weeksdefid", x.WeeksDefId), new XAttribute("termsdefid", x.TermsDefId)))), new XElement("cards", cards.Select(x => new XElement("card", new XAttribute("lessonid", x.LessonId), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("period", x.Period), new XAttribute("weeks", x.Weeks), new XAttribute("terms", x.Terms), new XAttribute("days", x.Days)))), new XElement("appmetadata", new XAttribute("source", "Ders Dağıtım Uygulaması"), new XAttribute("warning", "ASC dışı alanlar ayrıca eşlenmelidir.")));
         await using var fs = File.Create(path); var settings = new System.Xml.XmlWriterSettings { Async = true, Encoding = new System.Text.UTF8Encoding(false), Indent = true }; using var writer = System.Xml.XmlWriter.Create(fs, settings); root.Save(writer); await writer.FlushAsync();
     }
+    public async Task ExportAscXmlAsync(string path, CancellationToken t = default)
+    {
+        var importId = (await ReadAsync("SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1", r => r.GetString(0), t)).FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(importId)) throw new InvalidOperationException("Dışa aktarılacak ASC kurum verisi bulunamadı.");
+        var importFilter = $"'{importId.Replace("'", "''")}'";
+        var rawNodes = await ReadAsync($"SELECT RawXml FROM AscXmlNodes WHERE ImportId={importFilter}", r => r.GetString(0), t);
+        var groups = await ReadAsync($"SELECT ExternalId,Name,ClassId,StudentIds,EntireClass,DivisionTag FROM AscGroups WHERE ImportId={importFilter}", r => new AscGroupRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetInt32(4) == 1, r.GetString(5)), t);
+        var lessons = await ReadAsync($"SELECT ExternalId,ClassIds,SubjectId,TeacherIds,ClassroomIds,GroupIds,PeriodsPerCard,PeriodsPerWeek,DaysDefId,WeeksDefId,TermsDefId FROM AscLessons WHERE ImportId={importFilter}", r => new AscLessonRecord(r.GetString(0), r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6), r.GetString(7), r.GetString(8), r.GetString(9), r.GetString(10)), t);
+        var cards = await ReadAsync($"SELECT Id,LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId={importFilter} ORDER BY Id", r => (Id: r.GetInt64(0), Record: new AscCardRecord(r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6))), t);
+        var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
+        var overrideById = overrides.ToDictionary(x => x.CardId);
+        var importedNodes = rawNodes.Select(XElement.Parse).ToArray();
+        IEnumerable<XElement> Nodes(string localName) => importedNodes.Where(x => x.Name.LocalName == localName).Select(x => new XElement(x));
+        IEnumerable<XElement> ExportCards()
+        {
+            foreach (var card in cards)
+            {
+                var record = card.Record;
+                if (overrideById.TryGetValue(card.Id, out var change))
+                {
+                    if (change.IsRemoved) continue;
+                    record = record with { Period = change.Period.ToString(CultureInfo.InvariantCulture), Days = change.Days };
+                }
+                yield return new XElement("card", new XAttribute("lessonid", record.LessonId), new XAttribute("classroomids", record.ClassroomIds), new XAttribute("period", record.Period), new XAttribute("weeks", record.Weeks), new XAttribute("terms", record.Terms), new XAttribute("days", record.Days));
+            }
+        }
+        var root = new XElement("timetable",
+            new XAttribute("importtype", "database"),
+            new XAttribute("displayname", "aSc Timetables 2012 XML"),
+            new XElement("periods", Nodes("period")),
+            new XElement("breaks", Nodes("break")),
+            new XElement("daysdefs", Nodes("daysdef")),
+            new XElement("weeksdefs", Nodes("weeksdef")),
+            new XElement("termsdefs", Nodes("termsdef")),
+            new XElement("subjects", Nodes("subject")),
+            new XElement("teachers", Nodes("teacher")),
+            new XElement("buildings", Nodes("building")),
+            new XElement("classrooms", Nodes("classroom")),
+            new XElement("classes", Nodes("class")),
+            new XElement("groups", groups.Select(x => new XElement("group", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("classid", x.ClassId), new XAttribute("studentids", x.StudentIds), new XAttribute("entireclass", x.EntireClass ? 1 : 0), new XAttribute("divisiontag", x.DivisionTag)))),
+            new XElement("lessons", lessons.Select(x => new XElement("lesson", new XAttribute("id", x.Id), new XAttribute("classids", x.ClassIds), new XAttribute("subjectid", x.SubjectId), new XAttribute("teacherids", x.TeacherIds), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("groupids", x.GroupIds), new XAttribute("periodspercard", x.PeriodsPerCard), new XAttribute("periodsperweek", x.PeriodsPerWeek), new XAttribute("daysdefid", x.DaysDefId), new XAttribute("weeksdefid", x.WeeksDefId), new XAttribute("termsdefid", x.TermsDefId)))),
+            new XElement("cards", ExportCards()),
+            new XElement("appmetadata", new XAttribute("source", "Ders Dağıtım Uygulaması"), new XAttribute("warning", "ASC external ID değerleri korunur; manuel kart değişiklikleri cards çıktısına uygulanır.")));
+        await using var fs = File.Create(path); var settings = new System.Xml.XmlWriterSettings { Async = true, Encoding = new System.Text.UTF8Encoding(false), Indent = true }; using var writer = System.Xml.XmlWriter.Create(fs, settings); root.Save(writer); await writer.FlushAsync();
+    }
     public Task SaveClassAsync(SchoolClass value, CancellationToken t = default) => WriteAsync("INSERT INTO SchoolClasses (Id,Name,Grade,Branch,Department,IsDemo,ProgramType) VALUES ($id,$name,$grade,$branch,$department,$demo,$program) ON CONFLICT(Id) DO UPDATE SET Name=$name,Grade=$grade,Branch=$branch,Department=$department,IsDemo=$demo,ProgramType=$program", t, ("$id", value.Id.ToString()), ("$name", value.Name), ("$grade", value.Grade), ("$branch", value.Branch), ("$department", value.Department ?? (object)DBNull.Value), ("$demo", value.IsDemo ? 1 : 0), ("$program", (int)value.ProgramType));
     public Task SaveCourseAsync(Course value, CancellationToken t = default) => WriteAsync("INSERT INTO Courses (Id,Name,WeeklyHours,BlockOptions,IsPractical,Abbreviation,SourceLabel,SourceVersion,IsDemo,CourseType,IsElective) VALUES ($id,$name,$hours,$blocks,$practical,$abbr,$source,$version,$demo,$type,$elective) ON CONFLICT(Id) DO UPDATE SET Name=$name,WeeklyHours=$hours,BlockOptions=$blocks,IsPractical=$practical,Abbreviation=$abbr,SourceLabel=$source,SourceVersion=$version,IsDemo=$demo,CourseType=$type,IsElective=$elective", t, ("$id", value.Id.ToString()), ("$name", value.Name), ("$hours", value.WeeklyHours), ("$blocks", string.Join(',', value.BlockOptions)), ("$practical", value.IsPractical ? 1 : 0), ("$abbr", value.Abbreviation ?? (object)DBNull.Value), ("$source", value.SourceLabel ?? (object)DBNull.Value), ("$version", value.SourceVersion ?? (object)DBNull.Value), ("$demo", value.IsDemo ? 1 : 0), ("$type", (int)value.Type), ("$elective", value.IsElective ? 1 : 0));
-    public Task SaveResourceAsync(Resource value, CancellationToken t = default) => WriteAsync("INSERT INTO Resources (Id,Name,Capacity,ResourceType,IsDemo) VALUES ($id,$name,$capacity,$type,1) ON CONFLICT(Id) DO UPDATE SET Name=$name,Capacity=$capacity,ResourceType=$type", t, ("$id", value.Id.ToString()), ("$name", value.Name), ("$capacity", value.Capacity), ("$type", (int)value.Type));
+    public Task SaveResourceAsync(Resource value, CancellationToken t = default) => WriteAsync("INSERT INTO Resources (Id,Name,Capacity,ResourceType,IsDemo) VALUES ($id,$name,$capacity,$type,0) ON CONFLICT(Id) DO UPDATE SET Name=$name,Capacity=$capacity,ResourceType=$type,IsDemo=0", t, ("$id", value.Id.ToString()), ("$name", value.Name), ("$capacity", value.Capacity), ("$type", (int)value.Type));
     public Task DeleteAsync(string entity, Guid id, CancellationToken t = default) => WriteAsync($"DELETE FROM {entity} WHERE Id=$id", t, ("$id", id.ToString()));
 
     private async Task EnsureLegacyColumnsAsync(SqliteConnection connection, CancellationToken token)

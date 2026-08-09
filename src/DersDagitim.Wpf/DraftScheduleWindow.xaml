@@ -42,8 +42,13 @@
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
         <Button Content="Seçili dersi 1 saat ileri taşı" Click="Move_Click" Padding="12,7" Margin="0,0,8,0"/>
         <Button Content="Seçili atamayı kaldır" Click="Remove_Click" Padding="12,7" Margin="0,0,8,0"/>
+        <Button Content="Son kaldırmayı geri al" Click="Restore_Click" Padding="12,7" Margin="0,0,8,0"/>
         <Button Content="CSV aktar" Click="Export_Click" Padding="12,7" Margin="0,0,8,0"/>
         <Button Content="PDF olarak kaydet" Click="ExportPdf_Click" Padding="12,7"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <ComboBox x:Name="ClassFilter" Width="170" Margin="0,0,8,0" SelectionChanged="Filter_SelectionChanged"/>
+        <ComboBox x:Name="TeacherFilter" Width="220" Margin="0,0,8,0" SelectionChanged="Filter_SelectionChanged"/>
       </StackPanel>
       <TextBlock x:Name="ActionText" Margin="16,7,0,0" Foreground="#475569"/>
     </DockPanel>

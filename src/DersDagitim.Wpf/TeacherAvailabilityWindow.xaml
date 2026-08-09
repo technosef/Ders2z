@@ -1,1 +1,21 @@
-<Window x:Class="DersDagitim.Wpf.TeacherAvailabilityWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Öğretmen Uygunluk Kilitleri" Width="1050" Height="700" Background="#F8FAFC"><Grid Margin="24"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><TextBlock Text="Haftalık uygunluk ızgarası" FontSize="26" FontWeight="SemiBold"/><TextBlock Grid.Row="1" Text="Kırmızı: kesin kilit · sarı: tercih edilen boşluk · mavi: mümkün fakat düşük öncelik. Gerekçe isteğe bağlıdır." Foreground="#475569" Margin="0,6,0,18"/><DataGrid x:Name="AvailabilityGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"><DataGrid.Columns><DataGridTextColumn Header="Öğretmen" Binding="{Binding TeacherName}" Width="180"/><DataGridTextColumn Header="Gün" Binding="{Binding Day}" Width="110"/><DataGridTextColumn Header="Ders saati" Binding="{Binding LessonNumber}" Width="90"/><DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="160"/><DataGridTextColumn Header="Etiket / gerekçe" Binding="{Binding Reason}" Width="*"/><DataGridTextColumn Header="Tekrar" Binding="{Binding Recurrence}" Width="100"/></DataGrid.Columns></DataGrid></Grid></Window>
+<Window x:Class="DersDagitim.Wpf.TeacherAvailabilityWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Öğretmen Uygunluk Kilitleri" Width="1050" Height="700" Background="#F8FAFC">
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Haftalık uygunluk ızgarası" FontSize="26" FontWeight="SemiBold"/>
+        <TextBlock x:Name="SummaryText" Grid.Row="1" Text="Öğretmen uygunluk/kilit kayıtları yükleniyor." Foreground="#475569" Margin="0,6,0,18" TextWrapping="Wrap"/>
+        <DataGrid x:Name="AvailabilityGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Öğretmen" Binding="{Binding TeacherName}" Width="220"/>
+                <DataGridTextColumn Header="Gün" Binding="{Binding Day}" Width="120"/>
+                <DataGridTextColumn Header="Ders saati" Binding="{Binding LessonNumber}" Width="90"/>
+                <DataGridTextColumn Header="Durum" Binding="{Binding Status}" Width="180"/>
+                <DataGridTextColumn Header="Etiket / gerekçe" Binding="{Binding Reason}" Width="*"/>
+                <DataGridTextColumn Header="Tekrar" Binding="{Binding Recurrence}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Window>

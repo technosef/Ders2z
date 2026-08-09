@@ -1,5 +1,7 @@
 # Ders Dağıtım Uygulaması — İlerleme Planı
 
+> Kalıcı teknik bağlam ve sıradaki kesin işler: `PROJE_HAFIZASI.md`
+
 ## Referans Uygulamalar
 > **aSc Timetables** YouTube eğitim serileri ve resmi web sitesi referans alınıyor:
 > - Resmi web: https://ascturkiye.com
@@ -16,7 +18,8 @@
 - ✅ Öğretmen renklerinin aktarımı ve görünür gösterimi
 - ✅ Gerçek ASC ders taleplerinin solver'a bağlanması: 522/522 talep, 1.259/1.259 korunan kart seçeneği
 - ✅ Mevcut ASC Programı referans görünümü: 1.259 filtrelenebilir kart, sınıf/ders/öğretmen/oda/gün/saat ve öğretmen rengi
-- ✅ ASC kartı manuel taşıma/kaldırma: çakışma kontrolü ve SQLite AscCardOverrides kalıcılığı
+- ✅ ASC kartı manuel taşıma/kaldırma/geri alma: sınıf-öğretmen-kaynak çakışma kontrolü, SQLite AscCardOverrides kalıcılığı ve taslak yeniden üretiminde koruma
+- ✅ ASC ilişki kimlikleri doğrulandı/onarıldı: 522/522 talep, 1.259/1.259 kart ve 46 oda gerçek veritabanında eşleşiyor
 
 ---
 
@@ -31,7 +34,7 @@
 ---
 
 ## Manuel Düzenleme ve Taslak Akışı
-- ✅ Manuel düzenleme ve çakışma kontrolü: DraftScheduleWindow ve AscScheduleWindow'da hücre tıklama + taşı/kaldır işlemleri çalışıyor
+- ✅ Manuel düzenleme ve çakışma kontrolü: DraftScheduleWindow ve AscScheduleWindow'da hücre tıklama + kalıcı taşı/kaldır/geri alma işlemleri çalışıyor
 - 🔄 Seçmeli ders planlama modülü (aSc referanslı)
 - 🔄 Kurs programı entegrasyonu (EBA/DYK uyumlu)
 
@@ -46,9 +49,9 @@
 ---
 
 ## Test ve Doğrulama
-- ⬜ Uçtan uca gerçek veri testi (522 talep, 1259 kart)
-- ⬜ Çakışma senaryoları testleri
-- ⬜ Manuel düzenleme sınır koşulları testleri
+- 🔄 Uçtan uca gerçek veri testi (522 talep, 1.259 kart): veri/override döngüsü geçti, tam kullanıcı etkileşimi sürüyor
+- ✅ Çakışma senaryoları: sınıf, öğretmen, kaynak kapasitesi, blok sınırı ve kesin kilit denetimleri bağlı
+- ✅ Manuel düzenleme sınır koşulları: taşı → yeniden oku → kaldır → yeniden oku → geri al → yeniden oku testi geçti
 
 ---
 
@@ -71,3 +74,52 @@
 ---
 
 Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
+
+## 9 Ağustos 2026 Doğrulanan İlerleme
+
+- ✅ MainWindow/DataManagement/SchoolOverview içindeki kalan demo ekran dili ve sabit filtreler gerçek kurum ASC verisine çevrildi.
+- ✅ SchoolOverview alan/program/sınıf/öğretmen/kaynak filtreleri gerçek kayıtlardan doluyor ve 1.259 ASC kartı üzerinden liste üretiyor.
+- ✅ ASC XML dışa aktarımında subject/teacher/class/classroom external ID'leri korunuyor; yeni GUID yazılmıyor.
+- ✅ `AscCardOverrides` taşınan/kaldırılan kartları export cards çıktısına uyguluyor.
+- ✅ Export round-trip: 145 grup / 522 lesson / 1.259 card doğrulandı.
+- ✅ Override kopya DB testi: kaldırma sonrası 1.258 card, taşınan kart export'ta period/days güncel.
+- ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+- ✅ EXE smoke: WPF uygulaması başlatıldı ve temiz kapatıldı.
+
+## 9 Ağustos 2026 Kullanıcı Ekran Düzeltmeleri
+
+- ✅ Haftalık uygunluk ızgarası artık boş görünmez; gerçek öğretmenleri ve kısıt durumu bilgisini gösterir.
+- ✅ Taslak çizelgede okul geneli eşzamanlı ders sayısı çakışma olarak gösterilmez; gerçek çakışma kontrolünden ayrıldı.
+- ✅ Çakışma kontrolü gerçek sınıf/öğretmen/kaynak bindirmelerini analiz eder ve yerleşmeyen taleplerle birlikte listeler.
+- ✅ Öğretmen programı ve ders yükü ekranı tek örnek öğretmene bağlı değildir; gerçek ASC/taslak verisinden öğretmen seçilebilir rapor üretir.
+- ✅ Derleme ve EXE smoke testi geçti.
+
+## 9 Ağustos 2026 Ek Rapor Düzeltmesi
+
+- ✅ `TeacherReportSample` kaldırıldı; öğretmen raporu gerçek veriden bağımsız örnek kayda dönmez.
+- ✅ Son derleme ve EXE smoke testi başarılı.
+
+## 9 Ağustos 2026 Manuel Kullanım ve Okul Geneli Düzeltmeleri
+
+- ✅ Okul genel görünümü duplicate sınıf adı hatasına dayanıklı hale getirildi.
+- ✅ Tüm okul için renkli HTML program dosyası export eklendi.
+- ✅ Taslak çizelgeye sınıf/öğretmen filtresi eklendi; filtreli tek ders hücrelerinde sürükle-bırak gün/saat taşıma ve seçili atama kaldırma kullanılabilir.
+- ✅ Taslak CSV çıktısında GUID yerine sınıf/ders/öğretmen adları yazılıyor.
+- ✅ Derleme ve EXE smoke testi geçti.
+- ⬜ Kalıcı öğretmen devri: `AscCardTeacherOverrides` benzeri tablo, solver uygulaması ve ASC export `teacherids` güncellemesi eklenecek.
+
+## 9 Ağustos 2026 Sınıf ve Kaynak Program Çıktıları
+
+- ✅ Sınıfların haftalık ders programı izlenebilir hale getirildi.
+- ✅ Laboratuvar/kaynak haftalık ders programı izlenebilir hale getirildi.
+- ✅ Her iki görünüm için CSV ve PDF/yazdırma desteği eklendi.
+- ✅ `Çizelgeler` menüsü sınıf/kaynak program ekranına bağlandı.
+- ✅ Derleme ve EXE smoke testi geçti.
+
+## 9 Ağustos 2026 Güncelleme ve Hakkında
+
+- ✅ Ana menüye `Güncelleme / Hakkında` ekranı eklendi.
+- ✅ Hakkında bilgileri eklendi: `Hazırlayan: Mehmet Akif SÖNMEZ`, `İkizsoft Bilişim Hizmetleri`, `www.ikizsoft.com`.
+- ✅ WPF sürümü `0.9.0-dev` olarak proje metadata'sına bağlandı.
+- ✅ Güncelleme kontrol butonu eklendi; otomatik güncelleme altyapısı için ileride bağlanacak kanal bilgisi ekranda gösteriliyor.
+- ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.

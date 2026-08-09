@@ -1,0 +1,57 @@
+<Window x:Class="DersDagitim.Wpf.AboutUpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Güncelleme ve Hakkında" Width="620" Height="480" Background="#F8FAFC"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Ders Dağıtım Uygulaması" FontSize="28" FontWeight="SemiBold" Foreground="#0F172A"/>
+            <TextBlock x:Name="VersionText" Text="Sürüm okunuyor..." Foreground="#475569" Margin="0,6,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,24,0,24">
+            <StackPanel>
+                <TextBlock Text="Hakkında" FontSize="20" FontWeight="SemiBold" Foreground="#0F172A"/>
+                <Grid Margin="0,18,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Hazırlayan" Foreground="#64748B" Margin="0,0,16,10"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Mehmet Akif SÖNMEZ" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Firma" Foreground="#64748B" Margin="0,0,16,10"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="İkizsoft Bilişim Hizmetleri" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Web" Foreground="#64748B" Margin="0,0,16,10"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="www.ikizsoft.com" FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Sürüm kontrolü" Foreground="#64748B" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="UpdateStatusText" Text="Yerel uygulama sürümü kullanılıyor." TextWrapping="Wrap"/>
+                </Grid>
+
+                <Separator Margin="0,22,0,18"/>
+                <TextBlock Text="Güncelleme" FontSize="18" FontWeight="SemiBold" Foreground="#0F172A"/>
+                <TextBlock Text="Bu panel uygulama sürümünü ve güncelleme kanalını kontrol etmek için hazırlandı. Otomatik indirme sunucusu bağlandığında aynı ekrandan sürüm karşılaştırması yapılacak." TextWrapping="Wrap" Foreground="#475569" Margin="0,8,0,0"/>
+                <Button Content="Güncellemeyi kontrol et" Click="CheckUpdate_Click" HorizontalAlignment="Left" Padding="16,8" Margin="0,18,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Kapat" Click="Close_Click" Padding="18,8"/>
+        </StackPanel>
+    </Grid>
+</Window>

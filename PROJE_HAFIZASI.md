@@ -84,6 +84,9 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Canlı export round-trip doğrulaması: 145 grup, 522 lesson, 1.259 card; subject/teacher/class/classroom ID örneklerinde GUID benzeri değer sayısı 0.
 - ✅ Kopya veritabanında override doğrulaması: bir kart taşındı, bir kart kaldırıldı; export kart sayısı 1.258 oldu ve taşıma çıktıya uygulandı.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.
+- ✅ EXE smoke: WPF uygulaması 6 saniye canlı kaldı ve kapatıldı.
+- ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
+- ⚠️ Git push yapılamadı; repoda `origin` remote tanımlı değil.
 - ✅ EXE smoke: `DersDagitim.Wpf.exe` başlatıldı, 6 saniye canlı kaldı ve kapatıldı.
 - Not: Round-trip doğrulama için `tmp/RoundTrip` geçici harness'i ve `tmp/roundtrip-*.xml/db` çıktıları oluşturuldu; canlı `deneme.pdf` ve ilgisiz kullanıcı dosyalarına dokunulmadı.
 

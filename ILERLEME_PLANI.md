@@ -84,6 +84,9 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ Export round-trip: 145 grup / 522 lesson / 1.259 card doğrulandı.
 - ✅ Override kopya DB testi: kaldırma sonrası 1.258 card, taşınan kart export'ta period/days güncel.
 - ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+- ✅ EXE smoke testi geçti; uygulama kısa süre çalışıp temiz kapatıldı.
+- ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
+- ⚠️ Git push bekliyor; repoda `origin` remote tanımlı değil.
 - ✅ EXE smoke: WPF uygulaması başlatıldı ve temiz kapatıldı.
 
 ## 9 Ağustos 2026 Kullanıcı Ekran Düzeltmeleri

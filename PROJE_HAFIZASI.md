@@ -97,6 +97,12 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Kopya DB öğretmen devri testi: kart 1 `AHMET FURKAN AKAR` → `ALİ EMRE GÖREN`, tekrar okuma `manual=True`.
 - ✅ Kopya export doğrulaması: 522 lesson, 1259 card, `teacherids` içinde GUID benzeri değer 0.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı. EXE smoke testi başarılı.
+
+## 9 Ağustos 2026 Git Temizliği
+
+- ✅ `.gitignore` eklendi; `.vs/`, `bin/`, `obj/`, `tmp/`, `backups/`, yerel SQLite dosyaları ve PDF dosyaları yeni commit'lere yanlışlıkla eklenmeyecek.
+- ✅ Daha önce takip edilmiş IDE/build çıktıları `git rm --cached` ile yalnız git indeksinden çıkarıldı; dosya sistemindeki yerel dosyalara dokunulmadı.
+- ⚠️ GitHub push hâlâ remote URL bekliyor; repoda `origin` tanımlı değil ve `gh` CLI kurulu değil.
 - ✅ EXE smoke: WPF uygulaması 6 saniye canlı kaldı ve kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push yapılamadı; repoda `origin` remote tanımlı değil.

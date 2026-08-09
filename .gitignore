@@ -1,0 +1,21 @@
+# Visual Studio and local IDE state
+.vs/
+*.user
+*.suo
+
+# .NET build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Local runtime/test artifacts
+tmp/
+backups/
+*.db
+*.db-shm
+*.db-wal
+startup-error.log
+
+# User/local documents that should not be committed accidentally
+*.pdf

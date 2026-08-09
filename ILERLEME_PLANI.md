@@ -94,6 +94,12 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ ASC XML export `teacherids` değerini devredilen öğretmenin ASC external ID'siyle güncelliyor.
 - ✅ Doğrulama: canlı DB 522/1259 solver sayıları korundu; kopya DB öğretmen devri ve XML export testi geçti.
 - ✅ Derleme ve EXE smoke testi geçti.
+
+## 9 Ağustos 2026 Git Temizliği
+
+- ✅ `.gitignore` eklendi.
+- ✅ `.vs`, `bin`, `obj` gibi IDE/build çıktıları dosya sisteminden silinmeden git takibinden çıkarıldı.
+- 🔄 GitHub remote: `https://github.com/technosef/Ders2z` bağlanıp push yapılacak.
 - ✅ EXE smoke testi geçti; uygulama kısa süre çalışıp temiz kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push bekliyor; repoda `origin` remote tanımlı değil.

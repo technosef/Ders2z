@@ -191,3 +191,8 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - Tamamlandi: HTML cikti da ayni sayfa duzeniyle sinif ve kaynak/lab modlarini destekler.
 - Tamamlandi: Ogle aralari dikey kolon, ders bloklari yatay birlesik hucre olarak uretilir.
 - Dogrulandi: Derleme basarili, 0 hata, 0 uyari.
+
+## 9 Agustos 2026 Tam Ekran Pencere Acilisi
+
+- Tamamlandi: Ana ekran ve alt ekranlar varsayilan olarak tam ekran/maximized acilir hale getirildi.
+- Dogrulandi: Derleme basarili, 0 hata, 0 uyari; EXE smoke testi gecti.

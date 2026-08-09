@@ -1,4 +1,4 @@
-<Window x:Class="DersDagitim.Wpf.ConflictWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Çakışma Kontrolü" Width="1050" Height="640" Background="#F8FAFC">
+<Window x:Class="DersDagitim.Wpf.ConflictWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Çakışma Kontrolü" Width="1050" Height="640" WindowState="Maximized" Background="#F8FAFC">
     <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

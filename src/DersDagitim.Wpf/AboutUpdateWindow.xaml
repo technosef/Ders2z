@@ -1,7 +1,7 @@
 <Window x:Class="DersDagitim.Wpf.AboutUpdateWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Güncelleme ve Hakkında" Width="620" Height="480" Background="#F8FAFC"
+        Title="Güncelleme ve Hakkında" Width="620" Height="480" WindowState="Maximized" Background="#F8FAFC"
         WindowStartupLocation="CenterOwner">
     <Grid Margin="28">
         <Grid.RowDefinitions>

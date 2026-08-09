@@ -204,3 +204,9 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - HTML cikti da ayni aSc tarzi tabloya cevrildi; sinif ve lab/kaynak modunda secili oge veya tum ogeler icin sayfa sayfa uretilir.
 - Lab planinda hucre ortasinda sinif, ustte ders kisaltmasi ve ogretmen inisiyali; sinif planinda hucre ortasinda kaynak/lab bilgisi gosterilir.
 - Dogrulama: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari.
+
+## 9 Agustos 2026 Tam Ekran Pencere Acilisi
+
+- Ana pencere ve kullaniciya acilan tum alt pencerelere `WindowState="Maximized"` eklendi.
+- Kapsam: ana ekran, veri yonetimi, mevcut ASC programi, taslak cizelge, cakisma kontrolu, ogretmen uygunluk, ogretmen raporu, okul genel gorunumu, sinif/kaynak haftalik programlari, hakkinda/guncelleme.
+- Dogrulama: `dotnet build DersDagitim.sln` basarili, 0 hata, 0 uyari; EXE smoke testi gecti.

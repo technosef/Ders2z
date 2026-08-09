@@ -12,6 +12,7 @@ public partial class LaboratoryScheduleWindow : Window
 {
     private IReadOnlyList<LessonAssignment> _assignments = Array.Empty<LessonAssignment>();
     private IReadOnlyList<LessonRequest> _requests = Array.Empty<LessonRequest>();
+    private IReadOnlyList<Teacher> _teachers = Array.Empty<Teacher>();
     private bool _ready;
 
     public LaboratoryScheduleWindow()
@@ -26,6 +27,7 @@ public partial class LaboratoryScheduleWindow : Window
         {
             _assignments = DraftWorkspace.Current.Assignments;
             _requests = DraftWorkspace.Requests;
+            _teachers = DraftWorkspace.Teachers;
             StatusText.Text = "Taslak çizelge verisi kullanılıyor.";
         }
         else
@@ -33,6 +35,7 @@ public partial class LaboratoryScheduleWindow : Window
             var input = await App.Dashboard.Repository.GetAscSolverInputAsync(true);
             _assignments = input.ProtectedCards;
             _requests = input.Requests;
+            _teachers = await App.Dashboard.Repository.GetTeachersAsync();
             StatusText.Text = "Taslak yok; mevcut ASC kartları kullanılıyor.";
         }
 
@@ -82,7 +85,7 @@ public partial class LaboratoryScheduleWindow : Window
                 x.Assignment.LessonNumber,
                 x.Request!.Class.Name,
                 x.Request.Course.Name,
-                x.Request.Teacher.FullName,
+                TeacherNameFor(x.Assignment),
                 x.Request.Resource?.Name ?? "-",
                 x.Assignment.IsManual ? "Manuel" : "ASC/Taslak"))
             .ToArray();
@@ -92,7 +95,13 @@ public partial class LaboratoryScheduleWindow : Window
     }
 
     private LessonRequest? RequestFor(LessonAssignment assignment) =>
-        _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId);
+        _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId)
+        ?? _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId);
+
+    private string TeacherNameFor(LessonAssignment assignment) =>
+        _teachers.FirstOrDefault(x => x.Id == assignment.TeacherId)?.FullName
+        ?? RequestFor(assignment)?.Teacher.FullName
+        ?? "?";
 
     private void ModePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

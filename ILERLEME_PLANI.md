@@ -84,6 +84,16 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ Export round-trip: 145 grup / 522 lesson / 1.259 card doğrulandı.
 - ✅ Override kopya DB testi: kaldırma sonrası 1.258 card, taşınan kart export'ta period/days güncel.
 - ✅ Derleme: `dotnet build DersDagitim.sln` başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Kalıcı Öğretmen Devri
+
+- ✅ `AscCardTeacherOverrides` kalıcı veri modeli eklendi.
+- ✅ Taslak ekranında seçili ders başka öğretmene devredilebilir hale getirildi.
+- ✅ Devretme işleminde öğretmen çakışması, kesin kilit, kaynak kapasitesi ve haftalık yük kontrolleri uygulanıyor.
+- ✅ Devredilen öğretmen; taslak, mevcut ASC görünümü, öğretmen raporu, sınıf/kaynak çizelgeleri ve çakışma kontrolünde görünür hale getirildi.
+- ✅ ASC XML export `teacherids` değerini devredilen öğretmenin ASC external ID'siyle güncelliyor.
+- ✅ Doğrulama: canlı DB 522/1259 solver sayıları korundu; kopya DB öğretmen devri ve XML export testi geçti.
+- ✅ Derleme ve EXE smoke testi geçti.
 - ✅ EXE smoke testi geçti; uygulama kısa süre çalışıp temiz kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push bekliyor; repoda `origin` remote tanımlı değil.

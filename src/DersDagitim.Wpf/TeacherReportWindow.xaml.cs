@@ -86,7 +86,8 @@ public partial class TeacherReportWindow : Window
     }
 
     private LessonRequest? FindRequest(LessonAssignment assignment) =>
-        _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId);
+        _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId)
+        ?? _requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId);
 
     private void RenderEmpty()
     {

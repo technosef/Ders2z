@@ -11,6 +11,7 @@ public static class DraftWorkspace
     public static int ProtectedCardCount { get; private set; }
     public static DraftScheduleResult? Current { get; private set; }
     public static IReadOnlyList<LessonRequest> Requests { get; private set; } = Array.Empty<LessonRequest>();
+    public static IReadOnlyList<Teacher> Teachers { get; private set; } = Array.Empty<Teacher>();
     public static IReadOnlyList<AvailabilityRestriction> Restrictions { get; private set; } = Array.Empty<AvailabilityRestriction>();
     public static bool CanRestoreLastRemoved => _lastRemoved is not null;
 
@@ -25,7 +26,7 @@ public static class DraftWorkspace
         if (input.Requests.Count == 0) throw new InvalidOperationException("ASC XML ders talepleri bulunamadı veya temel ilişkiler eşleşmedi.");
         _repository = repository; _includeProtectedCards = includeProtectedCards; _protectedCardIds = input.ProtectedCardIds;
         ImportedLessonCount = input.ImportedLessonCount; ImportedCardCount = input.ImportedCardCount; MappedLessonCount = input.MappedLessonCount; ProtectedCardCount = input.ProtectedCards.Count;
-        Requests = input.Requests; Restrictions = Array.Empty<AvailabilityRestriction>();
+        Requests = input.Requests; Teachers = await repository.GetTeachersAsync(); Restrictions = Array.Empty<AvailabilityRestriction>();
         Current = new DraftScheduleSolver().Solve(Requests, input.ProtectedCards, Restrictions); return Current;
     }
 
@@ -34,13 +35,13 @@ public static class DraftWorkspace
         var classes = await repository.GetClassesAsync(); var teachers = await repository.GetTeachersAsync(); var courses = await repository.GetCoursesAsync(); var resources = await repository.GetResourcesAsync();
         var requests = courses.Select((course, index) => new LessonRequest(Guid.NewGuid(), classes[index % classes.Count], course, teachers[index % teachers.Count], course.IsPractical ? resources.FirstOrDefault() : null, Math.Min(course.WeeklyHours, 10), course.BlockOptions)).ToArray();
         var restrictions = new[] { new AvailabilityRestriction(Guid.NewGuid(), teachers[0].Id, DayOfWeek.Friday, 6, RestrictionType.Unavailable, "DEMO · lisansüstü eğitim", AvailabilitySeverity.HardLock) };
-        Current = new DraftScheduleSolver().Solve(requests, Array.Empty<LessonAssignment>(), restrictions); Requests = requests; Restrictions = restrictions; return Current;
+        Current = new DraftScheduleSolver().Solve(requests, Array.Empty<LessonAssignment>(), restrictions); Requests = requests; Teachers = teachers; Restrictions = restrictions; return Current;
     }
     public static async Task<(bool Success, string Message)> MoveAsync(Guid assignmentId, int newLesson, DayOfWeek? newDay = null)
     {
         if (Current is null) return (false, "Önce taslak üretin.");
         var old = Current.Assignments.FirstOrDefault(x => x.Id == assignmentId); if (old is null) return (false, "Atama bulunamadı.");
-        var request = Requests.FirstOrDefault(x => x.Class.Id == old.ClassId && x.Course.Id == old.CourseId && x.Teacher.Id == old.TeacherId); if (request is null) return (false, "Atama talebi bulunamadı.");
+        var request = RequestForAssignment(old); if (request is null) return (false, "Atama talebi bulunamadı.");
         var targetDay = newDay ?? old.Day; var slots = Enumerable.Range(newLesson, old.BlockLength).ToArray();
         if (newLesson < 1 || slots.Any(x => x > 10)) return (false, "Blok 1-10 ders saati sınırının dışına taşamaz.");
         if (slots.Any(x => Restrictions.Any(r => r.TeacherId == old.TeacherId && r.Day == targetDay && r.LessonNumber == x && (r.Severity == AvailabilitySeverity.HardLock || r.Type == RestrictionType.Unavailable)))) return (false, "Öğretmenin kesin kilidi bu slota izin vermiyor.");
@@ -53,6 +54,28 @@ public static class DraftWorkspace
         var moved = old with { Day = targetDay, LessonNumber = newLesson, IsManual = true };
         Current = Current with { Assignments = Current.Assignments.Select(x => x.Id == old.Id ? moved : x).ToArray() };
         return (true, "Atama taşındı, SQLite'a kaydedildi ve sonraki taslak üretiminde korunacak.");
+    }
+
+    public static async Task<(bool Success, string Message)> ChangeTeacherAsync(Guid assignmentId, Guid teacherId)
+    {
+        if (Current is null) return (false, "Önce taslak üretin.");
+        var old = Current.Assignments.FirstOrDefault(x => x.Id == assignmentId); if (old is null) return (false, "Atama bulunamadı.");
+        if (!_protectedCardIds.TryGetValue(old.Id, out var cardId) || _repository is null) return (false, "Bu atama ASC kartına bağlı değil; kalıcı öğretmen devri yalnız mevcut ASC kartlarında yapılabilir.");
+        var request = RequestForAssignment(old); if (request is null) return (false, "Atama talebi bulunamadı.");
+        var teacher = Teachers.FirstOrDefault(x => x.Id == teacherId); if (teacher is null) return (false, "Seçilen öğretmen bulunamadı.");
+        if (old.TeacherId == teacher.Id) return (false, "Atama zaten bu öğretmende.");
+
+        var slots = Enumerable.Range(old.LessonNumber, old.BlockLength).ToArray();
+        if (slots.Any(x => Restrictions.Any(r => r.TeacherId == teacher.Id && r.Day == old.Day && r.LessonNumber == x && (r.Severity == AvailabilitySeverity.HardLock || r.Type == RestrictionType.Unavailable)))) return (false, "Yeni öğretmenin kesin kilidi bu slota izin vermiyor.");
+        var overlapping = Current.Assignments.Where(x => x.Id != old.Id && x.Day == old.Day && slots.Any(s => s >= x.LessonNumber && s < x.LessonNumber + x.BlockLength)).ToArray();
+        if (overlapping.Any(x => x.TeacherId == teacher.Id)) return (false, "Yeni öğretmenin aynı saatte başka dersi var.");
+        if (old.ResourceId is not null && overlapping.Count(x => x.ResourceId == old.ResourceId) >= Math.Max(1, request.Resource?.Capacity ?? 1)) return (false, "Derslik/kaynak eşzamanlı kapasitesi aşılıyor.");
+        if (Current.Assignments.Where(x => x.Id != old.Id && x.TeacherId == teacher.Id).Sum(x => x.BlockLength) + old.BlockLength > teacher.WeeklyMaximumHours) return (false, "Yeni öğretmenin haftalık ders yükü üst sınırı aşılıyor.");
+
+        await _repository.SaveAscCardTeacherOverrideAsync(new AscCardTeacherOverride(cardId, teacher.Id));
+        var changed = old with { TeacherId = teacher.Id, IsManual = true };
+        Current = Current with { Assignments = Current.Assignments.Select(x => x.Id == old.Id ? changed : x).ToArray() };
+        return (true, "Atama yeni öğretmene devredildi, SQLite'a kaydedildi ve sonraki taslak üretiminde korunacak.");
     }
 
     public static async Task<(bool Success, string Message)> RemoveAsync(Guid assignmentId)
@@ -84,4 +107,8 @@ public static class DraftWorkspace
         if (index >= 0 && index < bits.Length) bits[index] = '1';
         return new string(bits);
     }
+
+    private static LessonRequest? RequestForAssignment(LessonAssignment assignment) =>
+        Requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId && x.Teacher.Id == assignment.TeacherId)
+        ?? Requests.FirstOrDefault(x => x.Class.Id == assignment.ClassId && x.Course.Id == assignment.CourseId);
 }

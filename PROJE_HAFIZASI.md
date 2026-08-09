@@ -84,6 +84,19 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ Canlı export round-trip doğrulaması: 145 grup, 522 lesson, 1.259 card; subject/teacher/class/classroom ID örneklerinde GUID benzeri değer sayısı 0.
 - ✅ Kopya veritabanında override doğrulaması: bir kart taşındı, bir kart kaldırıldı; export kart sayısı 1.258 oldu ve taşıma çıktıya uygulandı.
 - ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı.
+
+## 9 Ağustos 2026 Kalıcı Öğretmen Devri
+
+- ✅ Manuel düzenleme için `AscCardTeacherOverrides` tablosu eklendi; ASC kartı başka öğretmene kalıcı devredilebilir hale getirildi.
+- ✅ `DraftScheduleWindow` sağ manuel paneline `Yeni öğretmen` seçimi ve `Seçili dersi öğretmene devret` butonu eklendi.
+- ✅ Öğretmen devri; öğretmen kesin kilidi, aynı saat öğretmen çakışması, kaynak kapasitesi ve haftalık maksimum ders yükü kontrollerinden geçiriliyor.
+- ✅ Taslak yeniden üretildiğinde devredilen kart yeni öğretmenle korunuyor; solver aynı sınıf/ders saatini tekrar üretmiyor.
+- ✅ Mevcut ASC programı, sınıf/kaynak çizelgeleri, öğretmen raporu ve çakışma kontrolü fiili öğretmeni gösterecek şekilde düzeltildi.
+- ✅ ASC XML export, öğretmen devri varsa `teacherids` alanını ASC ham dış öğretmen ID'siyle güncelliyor; GUID yazmıyor.
+- ✅ Canlı DB migration doğrulaması: 522 lesson, 1259 card, 522 mapped lesson, 1259 protected card.
+- ✅ Kopya DB öğretmen devri testi: kart 1 `AHMET FURKAN AKAR` → `ALİ EMRE GÖREN`, tekrar okuma `manual=True`.
+- ✅ Kopya export doğrulaması: 522 lesson, 1259 card, `teacherids` içinde GUID benzeri değer 0.
+- ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı. EXE smoke testi başarılı.
 - ✅ EXE smoke: WPF uygulaması 6 saniye canlı kaldı ve kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push yapılamadı; repoda `origin` remote tanımlı değil.

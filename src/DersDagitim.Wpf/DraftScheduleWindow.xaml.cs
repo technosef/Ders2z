@@ -37,6 +37,8 @@ public partial class DraftScheduleWindow : Window
         ManualDayCombo.DisplayMemberPath = nameof(DayOption.Name);
         ManualDayCombo.SelectedValuePath = nameof(DayOption.Day);
         ManualHourCombo.ItemsSource = Enumerable.Range(1, 10).ToArray();
+        ManualTeacherCombo.DisplayMemberPath = nameof(TeacherOption.Name);
+        ManualTeacherCombo.SelectedValuePath = nameof(TeacherOption.Id);
     }
 
     private void Refresh()
@@ -53,7 +55,8 @@ public partial class DraftScheduleWindow : Window
     {
         if (_filtersReady || result is null || DraftWorkspace.Requests.Count == 0) return;
         SetItems(ClassFilter, "Sınıf: Tümü", DraftWorkspace.Requests.Select(x => x.Class.Name));
-        SetItems(TeacherFilter, "Öğretmen: Tümü", DraftWorkspace.Requests.Select(x => x.Teacher.FullName));
+        SetItems(TeacherFilter, "Öğretmen: Tümü", DraftWorkspace.Teachers.Select(x => x.FullName));
+        ManualTeacherCombo.ItemsSource = DraftWorkspace.Teachers.OrderBy(x => x.FullName).Select(x => new TeacherOption(x.Id, x.FullName)).ToArray();
         _filtersReady = true;
     }
 
@@ -98,7 +101,7 @@ public partial class DraftScheduleWindow : Window
             var request = RequestFor(assignment);
             if (request is null) return false;
             if (className is not null && !string.Equals(request.Class.Name, className, StringComparison.OrdinalIgnoreCase)) return false;
-            if (teacherName is not null && !string.Equals(request.Teacher.FullName, teacherName, StringComparison.OrdinalIgnoreCase)) return false;
+            if (teacherName is not null && !string.Equals(TeacherNameFor(assignment), teacherName, StringComparison.OrdinalIgnoreCase)) return false;
             return true;
         });
     }
@@ -135,10 +138,10 @@ public partial class DraftScheduleWindow : Window
         if (assignments.Count == 0) return Brushes.White;
         if (assignments.Count > 1) return new SolidColorBrush(Color.FromRgb(219, 234, 254));
 
-        var req = RequestFor(assignments[0]);
-        if (!string.IsNullOrWhiteSpace(req?.Teacher.ColorCode))
+        var teacher = DraftWorkspace.Teachers.FirstOrDefault(x => x.Id == assignments[0].TeacherId) ?? RequestFor(assignments[0])?.Teacher;
+        if (!string.IsNullOrWhiteSpace(teacher?.ColorCode))
         {
-            try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(req.Teacher.ColorCode)); }
+            try { return new SolidColorBrush((Color)ColorConverter.ConvertFromString(teacher.ColorCode)); }
             catch { return Brushes.LightGray; }
         }
 
@@ -176,7 +179,7 @@ public partial class DraftScheduleWindow : Window
         lines.AddRange(DraftWorkspace.Current.Assignments.Select(x =>
         {
             var req = RequestFor(x);
-            return $"{GetDayName(x.Day)};{x.LessonNumber};{req?.Class.Name};{req?.Course.Name};{req?.Teacher.FullName};{x.BlockLength};{x.IsManual}";
+            return $"{GetDayName(x.Day)};{x.LessonNumber};{req?.Class.Name};{req?.Course.Name};{TeacherNameFor(x)};{x.BlockLength};{x.IsManual}";
         }));
         File.WriteAllText(dialog.FileName, string.Join(Environment.NewLine, lines), new UTF8Encoding(true));
         ActionText.Text = "CSV dışa aktarıldı; Excel ile açılabilir.";
@@ -213,16 +216,18 @@ public partial class DraftScheduleWindow : Window
     private void ShowAssignmentDetails(LessonAssignment assignment)
     {
         var req = RequestFor(assignment);
-        ActionText.Text = $"Seçili: {req?.Class.Name ?? "?"} - {req?.Course.Name ?? "?"} ({req?.Teacher.FullName ?? "?"}) | {GetDayName(assignment.Day)} {assignment.LessonNumber}. saat";
+        var teacherName = TeacherNameFor(assignment);
+        ActionText.Text = $"Seçili: {req?.Class.Name ?? "?"} - {req?.Course.Name ?? "?"} ({teacherName}) | {GetDayName(assignment.Day)} {assignment.LessonNumber}. saat";
         SelectedAssignmentText.Text = $"{req?.Class.Name ?? "?"} - {req?.Course.Name ?? "?"}";
         DetailClass.Text = req?.Class.Name ?? "?";
         DetailCourse.Text = req?.Course.Name ?? "?";
-        DetailTeacher.Text = req?.Teacher.FullName ?? "?";
+        DetailTeacher.Text = teacherName;
         DetailResource.Text = req?.Resource?.Name ?? "-";
         DetailTime.Text = $"{GetDayName(assignment.Day)} - {assignment.LessonNumber}. saat";
         DetailStatus.Text = assignment.IsManual ? "Manuel korundu" : "Otomatik taslak";
         ManualDayCombo.SelectedValue = assignment.Day;
         ManualHourCombo.SelectedItem = assignment.LessonNumber;
+        ManualTeacherCombo.SelectedValue = assignment.TeacherId;
         DetailPanel.Visibility = Visibility.Visible;
     }
 
@@ -249,8 +254,37 @@ public partial class DraftScheduleWindow : Window
         }
     }
 
+    private async void ManualTeacher_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedAssignment is null)
+        {
+            ActionText.Text = "Önce tek ders içeren bir hücre seçin.";
+            return;
+        }
+
+        if (ManualTeacherCombo.SelectedValue is not Guid teacherId)
+        {
+            ActionText.Text = "Devretmek için öğretmen seçin.";
+            return;
+        }
+
+        var result = await DraftWorkspace.ChangeTeacherAsync(_selectedAssignment.Id, teacherId);
+        ActionText.Text = result.Message;
+        if (result.Success)
+        {
+            _selectedAssignment = null;
+            Refresh();
+        }
+    }
+
     private static LessonRequest? RequestFor(LessonAssignment assignment) =>
-        DraftWorkspace.Requests.FirstOrDefault(r => r.Class.Id == assignment.ClassId && r.Course.Id == assignment.CourseId && r.Teacher.Id == assignment.TeacherId);
+        DraftWorkspace.Requests.FirstOrDefault(r => r.Class.Id == assignment.ClassId && r.Course.Id == assignment.CourseId && r.Teacher.Id == assignment.TeacherId)
+        ?? DraftWorkspace.Requests.FirstOrDefault(r => r.Class.Id == assignment.ClassId && r.Course.Id == assignment.CourseId);
+
+    private static string TeacherNameFor(LessonAssignment assignment) =>
+        DraftWorkspace.Teachers.FirstOrDefault(x => x.Id == assignment.TeacherId)?.FullName
+        ?? RequestFor(assignment)?.Teacher.FullName
+        ?? "?";
 
     private static List<LessonAssignment> AssignmentsFor(DraftScheduleRow row, string dayTag) => dayTag switch
     {
@@ -369,4 +403,5 @@ public partial class DraftScheduleWindow : Window
     }
 
     private sealed record DayOption(string Name, DayOfWeek Day);
+    private sealed record TeacherOption(Guid Id, string Name);
 }

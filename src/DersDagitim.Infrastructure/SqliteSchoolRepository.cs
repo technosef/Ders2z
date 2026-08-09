@@ -32,6 +32,7 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
             CREATE TABLE IF NOT EXISTS AscLessons (ImportId TEXT NOT NULL, ExternalId TEXT NOT NULL, ClassIds TEXT NOT NULL, SubjectId TEXT NOT NULL, TeacherIds TEXT NOT NULL, ClassroomIds TEXT NOT NULL, GroupIds TEXT NOT NULL, PeriodsPerCard TEXT NOT NULL, PeriodsPerWeek TEXT NOT NULL, DaysDefId TEXT NOT NULL, WeeksDefId TEXT NOT NULL, TermsDefId TEXT NOT NULL, PRIMARY KEY (ImportId,ExternalId));
             CREATE TABLE IF NOT EXISTS AscCards (ImportId TEXT NOT NULL, Id INTEGER PRIMARY KEY AUTOINCREMENT, LessonId TEXT NOT NULL, ClassroomIds TEXT NOT NULL, Period TEXT NOT NULL, Weeks TEXT NOT NULL, Terms TEXT NOT NULL, Days TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS AscCardOverrides (CardId INTEGER PRIMARY KEY, Period INTEGER NOT NULL, Days TEXT NOT NULL, IsRemoved INTEGER NOT NULL DEFAULT 0, UpdatedAt TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS AscCardTeacherOverrides (CardId INTEGER PRIMARY KEY, TeacherId TEXT NOT NULL, UpdatedAt TEXT NOT NULL);
             CREATE TABLE IF NOT EXISTS AppFlags (Key TEXT PRIMARY KEY, Value TEXT NOT NULL);
             """;
         await command.ExecuteNonQueryAsync(token);
@@ -54,6 +55,8 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var cards = await ReadAsync($"SELECT Id,LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId={importFilter} ORDER BY Id", r => (Id: r.GetInt64(0), Record: new AscCardRecord(r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6))), t);
         var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
         var overrideById = overrides.ToDictionary(x => x.CardId);
+        var teacherOverrides = await ReadAsync("SELECT CardId,TeacherId FROM AscCardTeacherOverrides", r => new AscCardTeacherOverride(r.GetInt64(0), Guid.Parse(r.GetString(1))), t);
+        var teacherOverrideById = teacherOverrides.ToDictionary(x => x.CardId);
         var groups = await ReadAsync($"SELECT ExternalId,ClassId FROM AscGroups WHERE ImportId={importFilter}", r => (Id: r.GetString(0), ClassId: r.GetString(1)), t);
         var nodes = await ReadAsync($"SELECT ExternalId,RawXml FROM AscXmlNodes WHERE ImportId={importFilter}", r => (Id: r.GetString(0), Raw: r.GetString(1)), t);
         var classes = await GetClassesAsync(t); var teachers = await GetTeachersAsync(t); var courses = await GetCoursesAsync(t); var resources = await GetResourcesAsync(t);
@@ -99,7 +102,8 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
                         days = change.Days;
                     }
                     var dayIndex = days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) continue;
-                    var assignment = new LessonAssignment(Guid.NewGuid(), request.Class.Id, request.Course.Id, request.Teacher.Id, request.Resource?.Id, (DayOfWeek)((int)DayOfWeek.Monday + dayIndex), period, Number(lessons.First(x => x.Id == card.Record.LessonId).PeriodsPerCard, 1), true);
+                    var teacherId = teacherOverrideById.TryGetValue(card.Id, out var teacherChange) && teachers.Any(x => x.Id == teacherChange.TeacherId) ? teacherChange.TeacherId : request.Teacher.Id;
+                    var assignment = new LessonAssignment(Guid.NewGuid(), request.Class.Id, request.Course.Id, teacherId, request.Resource?.Id, (DayOfWeek)((int)DayOfWeek.Monday + dayIndex), period, Number(lessons.First(x => x.Id == card.Record.LessonId).PeriodsPerCard, 1), true);
                     protectedCards.Add(assignment);
                     protectedCardIds[assignment.Id] = card.Id;
                 }
@@ -111,6 +115,8 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var cards = await ReadAsync("SELECT Id,LessonId,Period,Days FROM AscCards WHERE ImportId=(SELECT Id FROM AscXmlImports ORDER BY ImportedAt DESC LIMIT 1) ORDER BY Id", r => (Id: r.GetInt64(0), LessonId: r.GetString(1), Period: r.GetString(2), Days: r.GetString(3)), t);
         var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
         var overrideById = overrides.ToDictionary(x => x.CardId);
+        var teacherOverrides = await ReadAsync("SELECT CardId,TeacherId FROM AscCardTeacherOverrides", r => new AscCardTeacherOverride(r.GetInt64(0), Guid.Parse(r.GetString(1))), t);
+        var teacherOverrideById = teacherOverrides.ToDictionary(x => x.CardId);
         var teachers = await GetTeachersAsync(t); var resources = await GetResourcesAsync(t); var result = new List<AscScheduleCard>();
         foreach (var card in cards)
         {
@@ -118,14 +124,17 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
             var period = int.TryParse(card.Period, out var parsedPeriod) ? parsedPeriod : 1; var days = card.Days; var removed = false; var manual = false;
             if (overrideById.TryGetValue(card.Id, out var change)) { period = change.Period; days = change.Days; removed = change.IsRemoved; manual = true; }
             var dayIndex = days.IndexOf('1'); if (dayIndex < 0 || dayIndex > 4) continue;
-            var teacher = teachers.FirstOrDefault(x => x.Id == request.Teacher.Id); var resource = resources.FirstOrDefault(x => x.Id == request.Resource?.Id);
+            var teacherId = teacherOverrideById.TryGetValue(card.Id, out var teacherChange) ? teacherChange.TeacherId : request.Teacher.Id;
+            var teacher = teachers.FirstOrDefault(x => x.Id == teacherId) ?? request.Teacher; var resource = resources.FirstOrDefault(x => x.Id == request.Resource?.Id);
+            if (teacherId != request.Teacher.Id) manual = true;
             var lesson = input.Requests.First(x => x.Id == request.Id);
             var blockLength = lesson.BlockPatterns.Select(x => int.TryParse(x.Split('+')[0], out var length) ? length : 1).DefaultIfEmpty(1).First();
-            result.Add(new AscScheduleCard(card.Id, card.LessonId, request.Class.Name, request.Course.Name, request.Teacher.FullName, resource?.Name ?? "", teacher?.ColorCode ?? "", new[] { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma" }[dayIndex], period, blockLength, manual, removed));
+            result.Add(new AscScheduleCard(card.Id, card.LessonId, request.Class.Name, request.Course.Name, teacher.FullName, resource?.Name ?? "", teacher.ColorCode ?? "", new[] { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma" }[dayIndex], period, blockLength, manual, removed));
         }
         return result;
     }
     public Task SaveAscCardOverrideAsync(AscCardOverride value, CancellationToken t = default) => WriteAsync("INSERT INTO AscCardOverrides (CardId,Period,Days,IsRemoved,UpdatedAt) VALUES ($id,$period,$days,$removed,$updated) ON CONFLICT(CardId) DO UPDATE SET Period=$period,Days=$days,IsRemoved=$removed,UpdatedAt=$updated", t, ("$id", value.CardId), ("$period", value.Period), ("$days", value.Days), ("$removed", value.IsRemoved ? 1 : 0), ("$updated", DateTimeOffset.Now.ToString("O")));
+    public Task SaveAscCardTeacherOverrideAsync(AscCardTeacherOverride value, CancellationToken t = default) => WriteAsync("INSERT INTO AscCardTeacherOverrides (CardId,TeacherId,UpdatedAt) VALUES ($id,$teacher,$updated) ON CONFLICT(CardId) DO UPDATE SET TeacherId=$teacher,UpdatedAt=$updated", t, ("$id", value.CardId), ("$teacher", value.TeacherId.ToString()), ("$updated", DateTimeOffset.Now.ToString("O")));
     public Task SaveTeacherAsync(Teacher value, CancellationToken t = default) => WriteAsync("INSERT INTO Teachers (Id,FullName,WeeklyMaximumHours,PreferredDayOff,Code,IsDemo,Department,AvailabilityNote,StaffStatus,SourceLabel,SourceUrl,SourceAccessDate,ColorCode) VALUES ($id,$name,$hours,$day,$code,$demo,$department,$note,$status,$label,$url,$date,$color) ON CONFLICT(Id) DO UPDATE SET FullName=$name,WeeklyMaximumHours=$hours,PreferredDayOff=$day,Code=$code,IsDemo=$demo,Department=$department,AvailabilityNote=$note,StaffStatus=$status,SourceLabel=$label,SourceUrl=$url,SourceAccessDate=$date,ColorCode=$color", t, ("$id", value.Id.ToString()), ("$name", value.FullName), ("$hours", value.WeeklyMaximumHours), ("$day", value.PreferredDayOff is null ? DBNull.Value : value.PreferredDayOff), ("$code", value.Code ?? (object)DBNull.Value), ("$demo", value.IsDemo ? 1 : 0), ("$department", value.Department ?? (object)DBNull.Value), ("$note", value.AvailabilityNote ?? (object)DBNull.Value), ("$status", value.StaffStatus), ("$label", value.SourceLabel ?? (object)DBNull.Value), ("$url", value.SourceUrl ?? (object)DBNull.Value), ("$date", value.SourceAccessDate?.ToString("yyyy-MM-dd") ?? (object)DBNull.Value), ("$color", value.ColorCode ?? (object)DBNull.Value));
     public async Task ImportTeachersAsync(IReadOnlyList<Teacher> values, CancellationToken t = default) { var current = await GetTeachersAsync(t); foreach (var incoming in values) { var old = current.FirstOrDefault(x => string.Equals(x.FullName, incoming.FullName, StringComparison.OrdinalIgnoreCase)); var merged = old is null ? incoming : incoming with { Id = old.Id, WeeklyMaximumHours = old.WeeklyMaximumHours, PreferredDayOff = old.PreferredDayOff, IsDemo = old.IsDemo, AvailabilityNote = old.AvailabilityNote, StaffStatus = old.StaffStatus, ColorCode = old.ColorCode ?? incoming.ColorCode }; await SaveTeacherAsync(merged, t); } }
     public async Task CleanTeachersForAscAsync(IReadOnlyList<Teacher> xmlTeachers, CancellationToken t = default)
@@ -192,8 +201,30 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
         var cards = await ReadAsync($"SELECT Id,LessonId,ClassroomIds,Period,Weeks,Terms,Days FROM AscCards WHERE ImportId={importFilter} ORDER BY Id", r => (Id: r.GetInt64(0), Record: new AscCardRecord(r.GetString(1), r.GetString(2), r.GetString(3), r.GetString(4), r.GetString(5), r.GetString(6))), t);
         var overrides = await ReadAsync("SELECT CardId,Period,Days,IsRemoved FROM AscCardOverrides", r => new AscCardOverride(r.GetInt64(0), r.GetInt32(1), r.GetString(2), r.GetInt32(3) == 1), t);
         var overrideById = overrides.ToDictionary(x => x.CardId);
+        var teacherOverrides = await ReadAsync("SELECT CardId,TeacherId FROM AscCardTeacherOverrides", r => new AscCardTeacherOverride(r.GetInt64(0), Guid.Parse(r.GetString(1))), t);
+        var teacherOverrideById = teacherOverrides.ToDictionary(x => x.CardId);
         var importedNodes = rawNodes.Select(XElement.Parse).ToArray();
         IEnumerable<XElement> Nodes(string localName) => importedNodes.Where(x => x.Name.LocalName == localName).Select(x => new XElement(x));
+        var teachers = await GetTeachersAsync(t);
+        static string NodeName(XElement node) => (string?)node.Attribute("name") ?? (string?)node.Attribute("short") ?? "";
+        var teacherExternalIdByTeacherId = teachers
+            .Select(teacher => (teacher.Id, ExternalId: Nodes("teacher").FirstOrDefault(node => string.Equals(NodeName(node), teacher.FullName, StringComparison.OrdinalIgnoreCase))?.Attribute("id")?.Value))
+            .Where(x => !string.IsNullOrWhiteSpace(x.ExternalId))
+            .ToDictionary(x => x.Id, x => x.ExternalId!, EqualityComparer<Guid>.Default);
+        var teacherOverrideByLessonId = cards
+            .Where(card => teacherOverrideById.ContainsKey(card.Id))
+            .GroupBy(card => card.Record.LessonId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => teacherOverrideById[group.First().Id].TeacherId, StringComparer.OrdinalIgnoreCase);
+        IEnumerable<XElement> ExportLessons()
+        {
+            foreach (var lesson in lessons)
+            {
+                var teacherIds = lesson.TeacherIds;
+                if (teacherOverrideByLessonId.TryGetValue(lesson.Id, out var teacherId) && teacherExternalIdByTeacherId.TryGetValue(teacherId, out var externalTeacherId))
+                    teacherIds = externalTeacherId;
+                yield return new XElement("lesson", new XAttribute("id", lesson.Id), new XAttribute("classids", lesson.ClassIds), new XAttribute("subjectid", lesson.SubjectId), new XAttribute("teacherids", teacherIds), new XAttribute("classroomids", lesson.ClassroomIds), new XAttribute("groupids", lesson.GroupIds), new XAttribute("periodspercard", lesson.PeriodsPerCard), new XAttribute("periodsperweek", lesson.PeriodsPerWeek), new XAttribute("daysdefid", lesson.DaysDefId), new XAttribute("weeksdefid", lesson.WeeksDefId), new XAttribute("termsdefid", lesson.TermsDefId));
+            }
+        }
         IEnumerable<XElement> ExportCards()
         {
             foreach (var card in cards)
@@ -221,7 +252,7 @@ public sealed class SqliteSchoolRepository : ISchoolRepository
             new XElement("classrooms", Nodes("classroom")),
             new XElement("classes", Nodes("class")),
             new XElement("groups", groups.Select(x => new XElement("group", new XAttribute("id", x.Id), new XAttribute("name", x.Name), new XAttribute("classid", x.ClassId), new XAttribute("studentids", x.StudentIds), new XAttribute("entireclass", x.EntireClass ? 1 : 0), new XAttribute("divisiontag", x.DivisionTag)))),
-            new XElement("lessons", lessons.Select(x => new XElement("lesson", new XAttribute("id", x.Id), new XAttribute("classids", x.ClassIds), new XAttribute("subjectid", x.SubjectId), new XAttribute("teacherids", x.TeacherIds), new XAttribute("classroomids", x.ClassroomIds), new XAttribute("groupids", x.GroupIds), new XAttribute("periodspercard", x.PeriodsPerCard), new XAttribute("periodsperweek", x.PeriodsPerWeek), new XAttribute("daysdefid", x.DaysDefId), new XAttribute("weeksdefid", x.WeeksDefId), new XAttribute("termsdefid", x.TermsDefId)))),
+            new XElement("lessons", ExportLessons()),
             new XElement("cards", ExportCards()),
             new XElement("appmetadata", new XAttribute("source", "Ders Dağıtım Uygulaması"), new XAttribute("warning", "ASC external ID değerleri korunur; manuel kart değişiklikleri cards çıktısına uygulanır.")));
         await using var fs = File.Create(path); var settings = new System.Xml.XmlWriterSettings { Async = true, Encoding = new System.Text.UTF8Encoding(false), Indent = true }; using var writer = System.Xml.XmlWriter.Create(fs, settings); root.Save(writer); await writer.FlushAsync();

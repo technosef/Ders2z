@@ -173,7 +173,11 @@
             <TextBlock Text="Yeni ders saati" FontWeight="SemiBold" Margin="0,0,0,4"/>
             <ComboBox x:Name="ManualHourCombo" Height="30" Margin="0,0,0,12"/>
 
+            <TextBlock Text="Yeni öğretmen" FontWeight="SemiBold" Margin="0,0,0,4"/>
+            <ComboBox x:Name="ManualTeacherCombo" Height="30" Margin="0,0,0,12"/>
+
             <Button Content="Seçili dersi bu saate taşı" Click="ManualMove_Click" Padding="10,7" Margin="0,0,0,8"/>
+            <Button Content="Seçili dersi öğretmene devret" Click="ManualTeacher_Click" Padding="10,7" Margin="0,0,0,8"/>
             <Button Content="Seçili atamayı kaldır" Click="Remove_Click" Padding="10,7"/>
           </StackPanel>
         </Border>

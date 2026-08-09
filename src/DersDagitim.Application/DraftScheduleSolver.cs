@@ -16,7 +16,7 @@ public sealed class DraftScheduleSolver
         var rejected = new List<UnassignedLessonReason>();
         foreach (var request in requests)
         {
-            var remaining = Math.Max(0, request.WeeklyHours - assignments.Where(x => x.ClassId == request.Class.Id && x.CourseId == request.Course.Id && x.TeacherId == request.Teacher.Id).Sum(x => x.BlockLength));
+            var remaining = Math.Max(0, request.WeeklyHours - assignments.Where(x => x.ClassId == request.Class.Id && x.CourseId == request.Course.Id).Sum(x => x.BlockLength));
             var placedAny = remaining == 0;
             foreach (var pattern in request.BlockPatterns.OrderByDescending(ParseBlockLength))
             {

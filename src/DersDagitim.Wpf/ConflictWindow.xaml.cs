@@ -34,7 +34,7 @@ public partial class ConflictWindow : Window
     private static IEnumerable<Row> BuildConflictRows(DraftScheduleResult result)
     {
         var requestByKey = DraftWorkspace.Requests
-            .GroupBy(x => (x.Class.Id, x.Course.Id, x.Teacher.Id))
+            .GroupBy(x => (x.Class.Id, x.Course.Id))
             .ToDictionary(x => x.Key, x => x.First());
 
         for (var slot = 1; slot <= 10; slot++)
@@ -61,15 +61,15 @@ public partial class ConflictWindow : Window
         }
     }
 
-    private static string Describe(IEnumerable<LessonAssignment> assignments, Dictionary<(Guid ClassId, Guid CourseId, Guid TeacherId), LessonRequest> requestByKey) =>
+    private static string Describe(IEnumerable<LessonAssignment> assignments, Dictionary<(Guid ClassId, Guid CourseId), LessonRequest> requestByKey) =>
         string.Join(" | ", assignments.Select(x =>
         {
-            var key = (x.ClassId, x.CourseId, x.TeacherId);
-            return requestByKey.TryGetValue(key, out var req) ? $"{req.Class.Name} - {req.Course.Name} - {req.Teacher.FullName}" : x.Id.ToString();
+            var key = (x.ClassId, x.CourseId);
+            return requestByKey.TryGetValue(key, out var req) ? $"{req.Class.Name} - {req.Course.Name} - {NameForTeacher(x.TeacherId)}" : x.Id.ToString();
         }));
 
     private static string NameForClass(Guid id) => DraftWorkspace.Requests.FirstOrDefault(x => x.Class.Id == id)?.Class.Name ?? id.ToString();
-    private static string NameForTeacher(Guid id) => DraftWorkspace.Requests.FirstOrDefault(x => x.Teacher.Id == id)?.Teacher.FullName ?? id.ToString();
+    private static string NameForTeacher(Guid id) => DraftWorkspace.Teachers.FirstOrDefault(x => x.Id == id)?.FullName ?? DraftWorkspace.Requests.FirstOrDefault(x => x.Teacher.Id == id)?.Teacher.FullName ?? id.ToString();
     private static string NameForResource(Guid id) => DraftWorkspace.Requests.FirstOrDefault(x => x.Resource?.Id == id)?.Resource?.Name ?? id.ToString();
     private static int CapacityForResource(Guid id) => Math.Max(1, DraftWorkspace.Requests.FirstOrDefault(x => x.Resource?.Id == id)?.Resource?.Capacity ?? 1);
 

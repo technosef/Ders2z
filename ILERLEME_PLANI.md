@@ -101,6 +101,13 @@ Durum simgeleri: ✅ tamamlandı · 🔄 sürüyor · ⬜ bekliyor
 - ✅ `.vs`, `bin`, `obj` gibi IDE/build çıktıları dosya sisteminden silinmeden git takibinden çıkarıldı.
 - ✅ GitHub remote bağlandı: `https://github.com/technosef/Ders2z.git`.
 - ✅ Remote geçmişi korunarak merge edildi ve `main` branch GitHub'a push edildi.
+
+## 9 Ağustos 2026 SQLite Haftalık Uygunluk Kayıtları
+
+- ✅ SQLite'a bağlı haftalık öğretmen uygunluk/kilit kayıt modeli eklendi.
+- ✅ Uygunluk ekranından öğretmen/gün/saat/durum/gerekçe seçilerek kayıt eklenebilir ve seçili kayıt silinebilir.
+- ✅ Taslak üretimi artık SQLite uygunluk kayıtlarını solver'a geçiriyor.
+- ✅ Doğrulama: kopya DB kayıt ekle/sil testi geçti; canlı DB migration oluştu; derleme ve EXE smoke testi geçti.
 - ✅ EXE smoke testi geçti; uygulama kısa süre çalışıp temiz kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push bekliyor; repoda `origin` remote tanımlı değil.

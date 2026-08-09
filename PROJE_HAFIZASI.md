@@ -105,6 +105,17 @@ Bu dosya kalıcı çalışma bağlamıdır. Yeni geliştirme turunda önce bu do
 - ✅ GitHub remote eklendi: `https://github.com/technosef/Ders2z.git`.
 - ✅ Remote geçmişi force push yapılmadan `ours` merge stratejisiyle yerel ana dalla bağlandı.
 - ✅ GitHub push başarılı: `main -> origin/main`.
+
+## 9 Ağustos 2026 SQLite Haftalık Uygunluk Kayıtları
+
+- ✅ `TeacherAvailabilityRestrictions` SQLite tablosu eklendi.
+- ✅ Repository sözleşmesine uygunluk kayıtlarını okuma, kaydetme ve silme metotları eklendi.
+- ✅ `TeacherAvailabilityWindow` artık yalnız bilgilendirme ekranı değil; öğretmen/gün/saat/durum/gerekçe seçilerek SQLite'a haftalık uygunluk/kilit kaydı yazabiliyor.
+- ✅ Seçili uygunluk/kilit kaydı ekrandan silinebiliyor.
+- ✅ `DraftWorkspace.GenerateAsync()` artık taslak üretirken SQLite uygunluk kayıtlarını okuyup solver'a geçiriyor.
+- ✅ Kopya DB testi: kayıt sayısı 0 → 1 → 0; kaydetme ve silme geçti.
+- ✅ Canlı DB migration doğrulaması: `TeacherAvailabilityRestrictions` tablosu oluştu, test kaydı bırakılmadı.
+- ✅ `dotnet build DersDagitim.sln`: başarılı, 0 hata, 0 uyarı. EXE smoke testi başarılı.
 - ✅ EXE smoke: WPF uygulaması 6 saniye canlı kaldı ve kapatıldı.
 - ✅ Yerel git commit: `dad5979` (`Gercek veri ekranlari ve hakkinda paneli`).
 - ⚠️ Git push yapılamadı; repoda `origin` remote tanımlı değil.

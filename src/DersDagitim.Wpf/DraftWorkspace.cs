@@ -26,7 +26,7 @@ public static class DraftWorkspace
         if (input.Requests.Count == 0) throw new InvalidOperationException("ASC XML ders talepleri bulunamadı veya temel ilişkiler eşleşmedi.");
         _repository = repository; _includeProtectedCards = includeProtectedCards; _protectedCardIds = input.ProtectedCardIds;
         ImportedLessonCount = input.ImportedLessonCount; ImportedCardCount = input.ImportedCardCount; MappedLessonCount = input.MappedLessonCount; ProtectedCardCount = input.ProtectedCards.Count;
-        Requests = input.Requests; Teachers = await repository.GetTeachersAsync(); Restrictions = Array.Empty<AvailabilityRestriction>();
+        Requests = input.Requests; Teachers = await repository.GetTeachersAsync(); Restrictions = await repository.GetAvailabilityRestrictionsAsync();
         Current = new DraftScheduleSolver().Solve(Requests, input.ProtectedCards, Restrictions); return Current;
     }
 
@@ -37,6 +37,8 @@ public static class DraftWorkspace
         var restrictions = new[] { new AvailabilityRestriction(Guid.NewGuid(), teachers[0].Id, DayOfWeek.Friday, 6, RestrictionType.Unavailable, "DEMO · lisansüstü eğitim", AvailabilitySeverity.HardLock) };
         Current = new DraftScheduleSolver().Solve(requests, Array.Empty<LessonAssignment>(), restrictions); Requests = requests; Teachers = teachers; Restrictions = restrictions; return Current;
     }
+
+    public static void UpdateRestrictions(IReadOnlyList<AvailabilityRestriction> restrictions) => Restrictions = restrictions;
     public static async Task<(bool Success, string Message)> MoveAsync(Guid assignmentId, int newLesson, DayOfWeek? newDay = null)
     {
         if (Current is null) return (false, "Önce taslak üretin.");
